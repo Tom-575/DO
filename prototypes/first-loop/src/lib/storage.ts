@@ -1,4 +1,4 @@
-import { get, set } from 'idb-keyval';
+import { del, get, set } from 'idb-keyval';
 import type { AppSettings, DO, MemoryRecord } from '../types';
 
 /**
@@ -14,6 +14,7 @@ const DOS_KEY = 'do.dos';
 const RECORDS_KEY = 'do.records';
 const SETTINGS_KEY = 'do.settings';
 const VERSION_KEY = 'do.version';
+const DRAFT_KEY = 'do.recordDraft';
 
 /** 当前数据契约版本;结构变化时递增并在 hydrate 前做迁移 */
 export const SCHEMA_VERSION = 1;
@@ -47,6 +48,33 @@ export function saveDos(dos: DO[]): void {
 
 export function saveRecords(records: MemoryRecord[]): void {
   void set(RECORDS_KEY, records).catch(() => undefined);
+}
+
+/* ---------- IndexedDB:记录草稿(#13) ---------- */
+
+/** 未保存记录的暂存态;images 存原始 Blob,与记录同构 */
+export interface RecordDraft {
+  text: string;
+  refined: string;
+  images: Blob[];
+  linkedDOId: string | null;
+  savedAt: number;
+}
+
+export async function loadRecordDraft(): Promise<RecordDraft | null> {
+  try {
+    return (await get<RecordDraft>(DRAFT_KEY)) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveRecordDraft(draft: RecordDraft): void {
+  void set(DRAFT_KEY, draft).catch(() => undefined);
+}
+
+export function clearRecordDraft(): void {
+  void del(DRAFT_KEY).catch(() => undefined);
 }
 
 /* ---------- localStorage:设置 ---------- */

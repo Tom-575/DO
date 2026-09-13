@@ -24,25 +24,27 @@
   color: var(--tertiary);
 }
 
-/* ---------- 主输入:原话,自动增高 ---------- */
+/* ---------- 主输入:原话,自动增高;surface 底衬保证背景图上的可读性(§7.5) ---------- */
 
 .record-text {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   min-height: 132px;
-  padding: 0;
+  padding: 14px;
   border: 0;
   outline: 0;
   resize: none;
   overflow: hidden;
-  background: transparent;
+  border-radius: 14px;
+  background: var(--surface);
   color: var(--text);
   font-size: 17px;
   line-height: 1.55;
 }
 
 .record-text::placeholder {
-  color: var(--tertiary);
+  color: var(--secondary);
 }
 
 /* ---------- 帮我整理:唯一的 AI 触发点,文字按钮 ---------- */
@@ -106,7 +108,7 @@
 
 .record-refined p {
   margin: 8px 2px 0;
-  color: var(--tertiary);
+  color: var(--secondary);
   font-size: 13px;
 }
 
@@ -155,7 +157,7 @@
   aspect-ratio: 1;
   border-radius: 12px;
   background: var(--surface-2);
-  color: var(--tertiary);
+  color: var(--secondary);
   font-size: 12px;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -167,6 +169,13 @@
 
 .record-add input {
   display: none;
+}
+
+/* 草稿恢复提示(#13):一行弱提示,不打断输入 */
+.record-draft-hint {
+  margin: 0 2px 10px;
+  color: var(--secondary);
+  font-size: 13px;
 }
 
 /* ---------- 关联 DO:标题行 + surface 卡(当前关联 / 展开候选) ---------- */
@@ -243,7 +252,7 @@
 }
 
 .record-link-current > span.empty {
-  color: var(--tertiary);
+  color: var(--secondary);
 }
 
 .record-link-current button {

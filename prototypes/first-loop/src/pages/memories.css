@@ -6,6 +6,45 @@
   gap: 10px;
 }
 
+/* 点条目进编辑(#13):导出按钮绝对定位需要锚点 */
+.memory {
+  position: relative;
+}
+
+/* 导出卡片入口(#14):右上角小图标,不与正文点击冲突(内部已 stopPropagation) */
+.memory-export {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--secondary);
+}
+
+.memory-export:active {
+  opacity: 0.7;
+}
+
+/* 图片加载失败占位(#13):与图片同比例的中性块 */
+.memory-image-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--tertiary);
+  font-size: 12px;
+}
+
 /* 空状态:居中、留白充足,无插画、无按钮 */
 .memories-empty-state {
   display: flex;

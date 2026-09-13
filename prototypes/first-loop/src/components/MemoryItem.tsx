@@ -1,42 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { DownloadSimple, ImageBroken } from '@phosphor-icons/react';
 import { formatClock, memoryDayLabel } from '../lib/memories-date';
-import type { MemoryRecord, RecordImage } from '../types';
+import { useImageUrls } from '../lib/image-urls';
+import type { MemoryRecord } from '../types';
 
 interface MemoryItemProps {
   record: MemoryRecord;
+  onEdit: (record: MemoryRecord) => void;
+  onExport: (record: MemoryRecord) => void;
 }
 
-/**
- * 把 RecordImage[] 统一转成可渲染的地址:
- * string(URL/dataURL)直接用;Blob 现场创建 object URL,
- * 在依赖变化或卸载时统一 revoke,避免泄漏。
- */
-function useImageUrls(images: RecordImage[]): string[] {
-  const [urls, setUrls] = useState<string[]>([]);
-  useEffect(() => {
-    const created: string[] = [];
-    const next = images.map((image) => {
-      if (typeof image === 'string') return image;
-      const url = URL.createObjectURL(image);
-      created.push(url);
-      return url;
-    });
-    setUrls(next);
-    return () => {
-      for (const url of created) URL.revokeObjectURL(url);
-    };
-  }, [images]);
-  return urls;
-}
-
-export default function MemoryItem({ record }: MemoryItemProps) {
+/** Blob 加载或解码失败不静默:占位块明示「图片加载失败」,其余图片不受影响 */
+export default function MemoryItem({ record, onEdit, onExport }: MemoryItemProps) {
   const urls = useImageUrls(record.images);
   const withImage = record.images.length > 0;
-  return <article className={`memory ${withImage ? 'with-image' : 'text-only'}`}>
+  const [failed, setFailed] = useState<number[]>([]);
+  const markFailed = (index: number) => setFailed((current) => (current.includes(index) ? current : [...current, index]));
+  return <article className={`memory ${withImage ? 'with-image' : 'text-only'}`} onClick={() => onEdit(record)}>
+    <button className="memory-export" aria-label="导出卡片" onClick={(event) => { event.stopPropagation(); onExport(record); }}><DownloadSimple size={16} weight="bold" /></button>
     <div className="memory-time"><strong>{memoryDayLabel(record.createdAt)}</strong><span>{formatClock(record.createdAt)}</span></div>
     {urls.length > 0 && (
       <div className="memory-images">
-        {urls.map((url, index) => <img key={index} src={url} alt="" loading="lazy" />)}
+        {urls.map((url, index) => failed.includes(index)
+          ? <div key={index} className="memory-image-failed"><ImageBroken size={20} /><span>图片加载失败</span></div>
+          : <img key={index} src={url} alt="" loading="lazy" onError={() => markFailed(index)} />)}
       </div>
     )}
     <p>{record.text}</p>

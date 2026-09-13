@@ -39,6 +39,8 @@ const initialState: StoreState = {
   activeDOId: null,
   historyOpen: false,
   appearanceOpen: false,
+  activeRecordId: null,
+  plannedAction: null,
 };
 
 function reducer(state: StoreState, action: AppAction): StoreState {
@@ -77,11 +79,31 @@ function reducer(state: StoreState, action: AppAction): StoreState {
         : state.dos;
       return { ...state, dos, records: [record, ...state.records] };
     }
-    case 'updateRecord':
-      return {
-        ...state,
-        records: state.records.map((item) => (item.id === action.id ? { ...item, ...action.patch } : item)),
-      };
+    case 'updateRecord': {
+      const current = state.records.find((item) => item.id === action.id);
+      if (!current) return state;
+      const records = state.records.map((item) => {
+        if (item.id !== action.id) return item;
+        // patch.linkedDOId 为 null 时该键先以 null 进入,下一行立即删键,断言成立
+        const next = { ...item, ...action.patch } as MemoryRecord;
+        if (action.patch.linkedDOId === null) delete (next as { linkedDOId?: string }).linkedDOId;
+        return next;
+      });
+      // 编辑态改关联(#13):原关联因本条记录而「已记录」,移出时回退「待记录」;
+      // 新关联随即转「已记录」。仅当 patch 明确携带 linkedDOId 才视为改关联。
+      if (action.patch.linkedDOId !== undefined && action.patch.linkedDOId !== current.linkedDOId) {
+        const before = current.linkedDOId;
+        let dos = state.dos;
+        if (before) dos = dos.map((item) => (item.id === before && item.status === '已记录' ? { ...item, status: '待记录' as const } : item));
+        if (action.patch.linkedDOId) dos = dos.map((item) => (item.id === action.patch.linkedDOId ? { ...item, status: '已记录' as const } : item));
+        return { ...state, records, dos };
+      }
+      return { ...state, records };
+    }
+    case 'setActiveRecordId':
+      return { ...state, activeRecordId: action.id };
+    case 'setPlannedAction':
+      return { ...state, plannedAction: action.action };
     case 'setSettings':
       return { ...state, settings: { ...state.settings, ...action.settings } };
     case 'importData':

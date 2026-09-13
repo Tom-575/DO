@@ -1,0 +1,47 @@
+# Test: 记录撰写:草稿/二次编辑/图片健壮性+对比度修复
+
+status: accepted
+candidate_revision:
+source_intent:
+source_design:
+source_change:
+issue:
+pr:
+verifier:
+created_at:
+updated_at:
+
+## 记录信息
+
+| 项目 | 内容 |
+|---|---|
+| 变更编号 | |
+| 阶段负责人 | |
+| 被验证版本 | |
+| 上游记录 | plan.md / design.md / build.md |
+| 验证者 | |
+| 当前状态 | draft |
+| 创建时间 | |
+| 更新时间 | |
+
+## Acceptance criteria
+
+| Criterion | Evidence | Result |
+|---|---|---|
+| | | |
+
+## Required checks
+
+| Check | Source or command | Result | Link |
+|---|---|---|---|
+| | | | |
+
+## Change-specific checks
+
+## Untested scope
+
+## Residual risk
+
+## Verdict
+
+`pass` / `fail` / `exception-required`
