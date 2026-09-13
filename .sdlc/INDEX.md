@@ -6,14 +6,12 @@ in their canonical artifacts.
 
 ## Current State
 
-- Active changes: 3
-- Lifecycle state: deploy
+- Active changes: 0
+- Lifecycle state: ready-for-plan
 - Last updated: 2026-09-13
 ## Active Changes
 
-- **record-writing-h5**: stage `deploy`, gate `awaiting-human-review`, risk `low`
-- **record-card-export-h5**: stage `deploy`, gate `awaiting-human-review`, risk `low`
-- **ai-dialogue-planning-h5**: stage `deploy`, gate `awaiting-human-review`, risk `low`
+No active changes.
 ## Active Decisions
 
 No active decisions recorded.

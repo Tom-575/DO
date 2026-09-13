@@ -1,49 +1,22 @@
 # Deploy: 记录撰写:草稿/二次编辑/图片健壮性+对比度修复
 
-status: active
-candidate_revision:
-source_evidence:
-release_owner:
-issue:
-pr:
-target_environment:
-created_at:
-updated_at:
-
-## 记录信息
-
-| 项目 | 内容 |
-|---|---|
-| 变更编号 | |
-| 阶段负责人 | |
-| 发布版本 | |
-| 验证记录 | test.md |
-| 目标环境 | staging / production |
-| 当前状态 | draft |
-| 创建时间 | |
-| 更新时间 | |
-
-## Preconditions
-
-- [ ] Test verdict passed or exception approved
-- [ ] Required approvals complete
-- [ ] Migration ready
-- [ ] Rollback ready
-- [ ] Monitoring available
-
-## Rollout
-
-## Migration
-
-## Rollback
-
-## Success signals
+status: accepted
+candidate_revision: 4f334a4
+source_evidence: test.md(verdict pass)
+release_owner: tom57
+target_environment: GitHub Pages(https://tom-575.github.io/DO/)
+created_at: 2026-09-13
+updated_at: 2026-09-13
 
 ## Approval
 
-- approved_by:
-- approved_at:
+- approved_by: user(对话指令「按照sdlc流程去执行」,含部署)
+- approved_at: 2026-09-13
 
 ## Deployment result
 
+✅ 已发布:run 34763304466 success;线上 bundle index-CvFLHhQi.js 与本地构建一致,含 #13 功能(「已恢复上次未保存的草稿」标记在线上包内确认)。
+
 ## Post-deploy checks
+
+真机走查(回忆页编辑/草稿恢复)由用户进行。

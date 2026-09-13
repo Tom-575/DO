@@ -1,0 +1,29 @@
+id: ai-dialogue-planning-h5
+title: "AI \u5BF9\u8BDD\u89C4\u5212 DO:\u8F93\u5165\u9875\u5BF9\u8BDD\u5F0F\u6F84\u6E05\
+  \u540E\u51FA\u6700\u5C0F\u884C\u52A8"
+stage: deploy
+risk: low
+gate: deployed-stable
+owner: ''
+stage_owners:
+  plan: tom57
+  design: tom57
+  build: tom57
+  test: tom57
+  deploy: tom57
+  maintain: tom57
+source: "\u4E8C\u671F\u7ACB\u9879:\u7528\u6237\u4E94\u70B9\u51B3\u7B56"
+issue: ''
+pr: ''
+supersedes: null
+plan: .sdlc/changes/ai-dialogue-planning-h5/plan.md
+design: .sdlc/changes/ai-dialogue-planning-h5/design.md
+build: .sdlc/changes/ai-dialogue-planning-h5/build.md
+test: .sdlc/changes/ai-dialogue-planning-h5/test.md
+deploy: .sdlc/changes/ai-dialogue-planning-h5/deploy.md
+maintain: null
+gate_approved_by: user
+gate_approved_at: '2026-09-13 14:42:03.910936+00:00'
+gate_note: "run 34763304466 success,\u7EBF\u4E0A\u6807\u8BB0\u786E\u8BA4"
+archived_at: '2026-09-13 14:42:04.001862+00:00'
+archive_note: "\u5DF2\u4E0A\u7EBF\u5E76\u9A8C\u8BC1"

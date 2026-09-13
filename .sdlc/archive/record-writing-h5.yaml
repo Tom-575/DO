@@ -1,0 +1,29 @@
+id: record-writing-h5
+title: "\u8BB0\u5F55\u64B0\u5199:\u8349\u7A3F/\u4E8C\u6B21\u7F16\u8F91/\u56FE\u7247\
+  \u5065\u58EE\u6027+\u5BF9\u6BD4\u5EA6\u4FEE\u590D"
+stage: deploy
+risk: low
+gate: deployed-stable
+owner: ''
+stage_owners:
+  plan: tom57
+  design: tom57
+  build: tom57
+  test: tom57
+  deploy: tom57
+  maintain: tom57
+source: "\u4E8C\u671F\u7ACB\u9879:\u7528\u6237\u4E94\u70B9\u51B3\u7B56"
+issue: ''
+pr: ''
+supersedes: null
+plan: .sdlc/changes/record-writing-h5/plan.md
+design: .sdlc/changes/record-writing-h5/design.md
+build: .sdlc/changes/record-writing-h5/build.md
+test: .sdlc/changes/record-writing-h5/test.md
+deploy: .sdlc/changes/record-writing-h5/deploy.md
+maintain: null
+gate_approved_by: user
+gate_approved_at: '2026-09-13 14:42:03.525897+00:00'
+gate_note: "run 34763304466 success,\u7EBF\u4E0A\u6807\u8BB0\u786E\u8BA4"
+archived_at: '2026-09-13 14:42:03.626124+00:00'
+archive_note: "\u5DF2\u4E0A\u7EBF\u5E76\u9A8C\u8BC1"
