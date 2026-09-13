@@ -30,10 +30,10 @@ No learnings recorded.
 ## Entry Points
 
 - Machine state: [lifecycle.yaml](lifecycle.yaml)
-- Artifact contracts: [../shared/artifact-contracts.md](../shared/artifact-contracts.md)
-- Risk model: [../shared/risk-model.md](../shared/risk-model.md)
-- Evidence policy: [../shared/evidence-policy.md](../shared/evidence-policy.md)
-- Lifecycle protocol: [../shared/lifecycle.md](../shared/lifecycle.md)
+- Artifact contracts: [../shared/artifact-contracts.md](../.zcode/shared/artifact-contracts.md)
+- Risk model: [../shared/risk-model.md](../.zcode/shared/risk-model.md)
+- Evidence policy: [../shared/evidence-policy.md](../.zcode/shared/evidence-policy.md)
+- Lifecycle protocol: [../shared/lifecycle.md](../.zcode/shared/lifecycle.md)
 
 ## Reading Policy
 
