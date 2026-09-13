@@ -29,3 +29,61 @@ active_changes:
   gate_approved_at: '2026-09-13 06:39:13.892199+00:00'
   gate_note: "\u8865\u5F55:\u72EC\u7ACB\u8D70\u67E5\u901A\u8FC7,\u771F\u673A\u9A8C\
     \u8BC1\u79FB\u4EA4 Deploy \u9636\u6BB5"
+- id: action-page-three-choices
+  title: "\u884C\u52A8\u9875\u6536\u655B\u4E3A\u4E09\u9009:\u9A6C\u4E0A\u505A/\u7B49\
+    \u7B49/\u4E0D\u60F3\u505A\u4E86"
+  stage: deploy
+  risk: low
+  gate: awaiting-human-review
+  owner: ''
+  stage_owners:
+    plan: tom57
+    design: tom57
+    build: tom57
+    test: tom57
+    deploy: tom57
+    maintain: tom57
+  source: "\u7528\u6237\u53CD\u9988:\u9009\u9879\u592A\u591A"
+  issue: ''
+  pr: ''
+  supersedes: null
+  plan: .sdlc/changes/action-page-three-choices/plan.md
+  design: .sdlc/changes/action-page-three-choices/design.md
+  build: .sdlc/changes/action-page-three-choices/build.md
+  test: .sdlc/changes/action-page-three-choices/test.md
+  deploy: .sdlc/changes/action-page-three-choices/deploy.md
+  maintain: null
+  gate_approved_by: user
+  gate_approved_at: '2026-09-13 11:21:46.215418+00:00'
+  gate_note: "\u6D4F\u89C8\u5668\u5B9E\u6D4B\u4E09\u8DEF\u5F84(\u7B49\u7B49\u2192\u5217\
+    \u8868\u53EF\u89C1;\u4E0D\u60F3\u505A\u4E86\u2192\u6C89\u5165\u5C55\u5F00\u533A\
+    ;\u9A6C\u4E0A\u505A\u2192\u56DE\u5230\u9876\u90E8)\u7B26\u5408\u9884\u671F,\u6D4B\
+    \u8BD5\u6570\u636E\u5DF2\u4ECE IndexedDB \u6E05\u7406"
+- id: record-image-upload-fix
+  title: "\u4FEE\u590D\u8BB0\u5F55\u9875\u56FE\u7247\u4E0A\u4F20\u9759\u9ED8\u5931\
+    \u8D25"
+  stage: deploy
+  risk: low
+  gate: awaiting-human-review
+  owner: ''
+  stage_owners:
+    plan: tom57
+    design: tom57
+    build: tom57
+    test: tom57
+    deploy: tom57
+    maintain: tom57
+  source: "\u7528\u6237\u53CD\u9988:\u8BB0\u5F55\u4E0A\u4F20\u4E0D\u4E86\u56FE\u7247\
+    (\u4E24\u6B21)"
+  issue: ''
+  pr: ''
+  supersedes: null
+  plan: .sdlc/changes/record-image-upload-fix/plan.md
+  design: .sdlc/changes/record-image-upload-fix/design.md
+  build: .sdlc/changes/record-image-upload-fix/build.md
+  test: .sdlc/changes/record-image-upload-fix/test.md
+  deploy: .sdlc/changes/record-image-upload-fix/deploy.md
+  maintain: null
+  gate_approved_by: user
+  gate_approved_at: '2026-09-13 11:46:18.421443+00:00'
+  gate_note: "\u56DE\u5F52\u8BC1\u636E\u8BB0\u5F55\u4E8E change note"

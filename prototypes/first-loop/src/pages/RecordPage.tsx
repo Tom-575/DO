@@ -71,7 +71,9 @@ export default function RecordPage() {
 
   const addImages = (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    setImages((current) => [...current, ...Array.from(files).slice(0, MAX_IMAGES - current.length)]);
+    // FileList 是实时引用:调用方随后会清空 input.value,必须先同步快照,延迟读取会拿到空列表
+    const picked = Array.from(files);
+    setImages((current) => [...current, ...picked.slice(0, MAX_IMAGES - current.length)]);
   };
 
   const refine = async () => {

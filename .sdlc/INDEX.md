@@ -6,12 +6,14 @@ in their canonical artifacts.
 
 ## Current State
 
-- Active changes: 1
+- Active changes: 3
 - Lifecycle state: deploy
 - Last updated: 2026-09-13
 ## Active Changes
 
 - **mvp-record-loop-h5**: stage `deploy`, gate `awaiting-human-review`, risk `medium`
+- **action-page-three-choices**: stage `deploy`, gate `awaiting-human-review`, risk `low`
+- **record-image-upload-fix**: stage `deploy`, gate `awaiting-human-review`, risk `low`
 ## Active Decisions
 
 No active decisions recorded.
