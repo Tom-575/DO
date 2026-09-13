@@ -1,0 +1,31 @@
+id: mvp-record-loop-h5
+title: "MVP:\u8BB0\u5F55\u95ED\u73AF H5(\u4ECA\u5929 + \u8BB0\u5F55 + \u56DE\u5FC6\
+  )"
+stage: deploy
+risk: medium
+gate: deployed-stable
+owner: tom57
+stage_owners:
+  plan: tom57
+  design: tom57
+  build: tom57
+  test: tom57
+  deploy: tom57
+  maintain: tom57
+source: docs/TODO.md
+issue: ''
+pr: ''
+supersedes: null
+plan: .sdlc/changes/mvp-record-loop-h5/plan.md
+design: .sdlc/changes/mvp-record-loop-h5/design.md
+build: .sdlc/changes/mvp-record-loop-h5/build.md
+test: .sdlc/changes/mvp-record-loop-h5/test.md
+deploy: .sdlc/changes/mvp-record-loop-h5/deploy.md
+maintain: null
+gate_approved_by: user
+gate_approved_at: '2026-09-13 13:11:10.623353+00:00'
+gate_note: "\u9996\u6B21\u53D1\u5E03\u6210\u529F;\u771F\u673A\u8D70\u67E5(TODO #11)\u7531\
+  \u7528\u6237\u8FDB\u884C,\u5DE5\u4EF6\u5DF2\u66F4\u65B0"
+archived_at: '2026-09-13 13:43:37.944294+00:00'
+archive_note: "\u771F\u673A\u9A8C\u6536\u901A\u8FC7(\u7528\u6237\u786E\u8BA4,2026-09-13),\u4E00\
+  \u671F MVP \u4EA4\u4ED8"

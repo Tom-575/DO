@@ -31,7 +31,7 @@ updated_at: 2026-09-13
       ✅ 2026-09-13 由 ZCode 经 API 创建 Pages 站点(build_type=workflow)完成,此前所有 run 均因此失败
 - [x] Actions 运行成功,https://tom-575.github.io/DO/ 可访问
       ✅ run 34758824216(2b6f391)success;线上 200,bundle 与本地构建哈希一致(index-BXLduAMJ.js),含三选新代码
-- [ ] 真机(iOS Safari / 安卓 Chrome)走通闭环 —— 对应 TODO #11(手机直接访问 https://tom-575.github.io/DO/ )
+- [x] 真机(iOS Safari / 安卓 Chrome)走通闭环 —— ✅ 2026-09-13 用户确认通过,一期 MVP 交付
 
 ## 已知环境注意
 
