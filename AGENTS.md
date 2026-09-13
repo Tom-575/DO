@@ -3,8 +3,8 @@
 - 产品定位：把模糊念头变成一个可以开始的最小行动，再让真实经历被轻松记录。
 - 当前权威文档：`docs/intent.md` 管长期价值；`docs/CONTEXT.md` 管已确认术语与决策；`docs/PRD.md` 管当前产品范围。
 - 当前原型：`prototypes/first-loop`，运行 `npm run prototype`，访问 `http://localhost:4173/`。
-- 技术形态：React + Vite + Motion 的 H5 原型；这是可丢弃原型，不是生产架构。
-- 原型约定：保持手机优先、电脑可用；状态仅驻留内存，刷新即失；不添加账号、数据库或真实发布。
+- 技术形态（H5 版，2026-09-13 已定）：TypeScript + React 19 + Vite + Motion + Phosphor 的纯前端单页应用；无后端、无账号、无服务器数据库；DO/记录/图片存 IndexedDB（idb-keyval），设置与 AI key 存 localStorage；AI 通过统一 adapter 走 OpenAI 兼容接口直连；部署 GitHub Pages。
+- 产品约定：保持手机优先、电脑可用；MVP 阶段数据仅存本机，用导出 JSON 做备份；不添加后端服务、云同步、社交能力。
 - 决策原则：开始优先、一步原则、真实优先、低压力；记录可以不关联 DO；“已记录”描述记录生命周期，不等于“已完成”。
 - 修改产品行为前先读 `docs/intent.md`、`docs/CONTEXT.md`、`docs/PRD.md`，不要重复询问 `docs/CONTEXT.md` 中已确认的决策。
 - 下一步：验证从模糊念头到记录保存的完整闭环，再据反馈形成正式规格。

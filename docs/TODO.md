@@ -1,12 +1,14 @@
 # DO MVP TODO
 
+**技术框架(已定,2026-09-13)**:TypeScript + React 19 + Vite + Motion + Phosphor;纯前端无后端;数据存 IndexedDB(idb-keyval,图片存原始 Blob),设置与 AI 配置存 localStorage;AI 走 lib/ai adapter → OpenAI 兼容接口直连(key 存本机);部署 GitHub Pages + Actions。
+
 每个窗口开工时发这句 + 对应任务编号即可:
 **「先读 AGENTS.md、docs/CONTEXT.md、docs/design/DESIGN.md,然后完成 docs/TODO.md 的任务 #N,完成后提交并推送」**
 
 ## 第一步(串行,一个窗口做完,期间不要开其他窗口)
 
-- [ ] **#1 工程重构** — 把 77 行单文件 app.jsx 拆成 src/ 模块结构(pages / components / store / lib),功能与视觉保持完全不变。
-- [ ] **#2 数据层** — 按文末数据契约实现全局 store + localStorage 持久化,把现有硬编码数据换成真实数据流,刷新不丢。
+- [ ] **#1 工程重构** — 把 77 行单文件 app.jsx 拆成 src/ 模块结构并以 TypeScript 实现(pages / components / store / lib,数据契约类型定义在 store/types.ts),功能与视觉保持完全不变。
+- [ ] **#2 数据层** — 按文末数据契约实现全局 store;DO/记录/图片存 IndexedDB(idb-keyval,图片存原始 Blob),设置与 AI 配置存 localStorage;把现有硬编码数据换成真实数据流,刷新不丢。
 
 ## 第二步(可并行,一行一个窗口)
 
@@ -15,9 +17,10 @@
 - [ ] **#5 首页 DO 管理** — 主 DO 推荐 1 条 + 备选 1 条 + 收起区(候选上限 3);行动意向三选(愿意去做 / 不想做了 / 暂不决定,可不选直接执行);待定超 24h 自动收进历史清单。
 - [ ] **#6 分享卡片** — 从记录生成单张图文卡片(封面图 / 标题 / 摘要),内容可编辑、可保存为图片;分享是独立动作,不强制。
 - [ ] **#7 回忆页真实化** — 删除硬编码记录,按时间倒序展示真实记录(图文两种形态),补空状态。
-- [ ] **#8 真实 AI** — 把关键词模拟换成真实 AI(先定架构:用户填 key 直连 or 本地 proxy;行为契约见 docs/DO-PROMPT.md),支持开放式输入、理解纠正、建议修正。
+- [ ] **#8 真实 AI** — 把关键词模拟换成真实 AI:OpenAI 兼容接口直连,baseURL / model / key 在设置页可配(key 存 localStorage),mock 保留为无 key 时的兜底;行为契约见 docs/DO-PROMPT.md,支持开放式输入、理解纠正、建议修正。
 - [ ] **#9 Bug 修复** — 修 DESIGN.md §7 四项:日期硬编码、薄雾/夜色背景失效、回忆页死按钮、首页背景与回忆图复用。
 - [ ] **#10 部署** — vite build + 托管(推荐 GitHub Pages)+ push 自动部署,手机浏览器可访问。
+- [ ] **#12 数据备份** — 设置页加「导出 JSON / 导入 JSON」,把本机全部 DO 与记录打包备份与恢复(无云同步阶段的唯一保险)。
 
 ## 收尾(全部完成后)
 
