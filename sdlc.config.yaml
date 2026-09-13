@@ -1,0 +1,22 @@
+version: 1
+project: Do
+project_defaults:
+  stage_owners:
+    plan: tom57
+    design: tom57
+    build: tom57
+    test: tom57
+    deploy: tom57
+    maintain: tom57
+issue_tracker:
+  type: local
+  base_url: ''
+  issue_field: issue
+  pr_field: pr
+artifact_storage:
+  default: .sdlc
+  source_of_truth: git
+human_gates:
+  require_approver: true
+  require_timestamp: true
+  production_requires_named_approver: true

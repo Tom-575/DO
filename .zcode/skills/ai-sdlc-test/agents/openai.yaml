@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI SDLC Test"
+  short_description: "Independently verify a build candidate"
+  default_prompt: "Use $ai-sdlc-test to produce an independent verdict for this candidate."

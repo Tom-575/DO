@@ -1,0 +1,42 @@
+# SDLC Index
+
+This is the first-read navigation index for Agents and humans. It summarizes
+current state and links to durable records. Detailed decisions and evidence stay
+in their canonical artifacts.
+
+## Current State
+
+- Active changes: 0
+- Lifecycle state: ready-for-plan
+- Last updated: 2026-09-12
+## Active Changes
+
+No active changes.
+## Active Decisions
+
+No active decisions recorded.
+
+## Active Constraints
+
+- Six stages are mandatory: Plan, Design, Build, Test, Deploy, Maintain.
+- Stage artifacts are version-controlled with the project.
+- Human approval confirms factual accuracy and consequential decisions.
+- Detailed records are read on demand; this index is the default entry point.
+
+## Recent Learnings
+
+No learnings recorded.
+
+## Entry Points
+
+- Machine state: [lifecycle.yaml](lifecycle.yaml)
+- Artifact contracts: [../shared/artifact-contracts.md](../shared/artifact-contracts.md)
+- Risk model: [../shared/risk-model.md](../shared/risk-model.md)
+- Evidence policy: [../shared/evidence-policy.md](../shared/evidence-policy.md)
+- Lifecycle protocol: [../shared/lifecycle.md](../shared/lifecycle.md)
+
+## Reading Policy
+
+Read this index and the current change before searching historical artifacts. Open
+decisions, evidence, releases, or learnings only when the current task needs them.
+Use Git history when the reason for a superseded decision matters.

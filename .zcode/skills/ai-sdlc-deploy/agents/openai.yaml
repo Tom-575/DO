@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI SDLC Deploy"
+  short_description: "Release a verified candidate through controlled rollout"
+  default_prompt: "Use $ai-sdlc-deploy to prepare and execute the authorized release."

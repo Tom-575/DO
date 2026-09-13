@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI SDLC Navigator"
+  short_description: "Guide a change through the six-stage lifecycle"
+  default_prompt: "Use $ai-sdlc-navigator to identify the current SDLC stage and next gate."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI SDLC Design"
+  short_description: "Turn accepted intent into a solution design"
+  default_prompt: "Use $ai-sdlc-design to design this accepted change."

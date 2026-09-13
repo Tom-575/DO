@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI SDLC Maintain"
+  short_description: "Restore service and turn signals into learning"
+  default_prompt: "Use $ai-sdlc-maintain to handle this production signal and capture learning."
