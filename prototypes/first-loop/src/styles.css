@@ -60,8 +60,7 @@ textarea {
 .phone-app.has-background .do-intro,
 .phone-app.has-background .previous-section,
 .phone-app.has-background .memory-time,
-.phone-app.has-background .memory p,
-.phone-app.has-background .memory > button { position: relative; z-index: 1; }
+.phone-app.has-background .memory p { position: relative; z-index: 1; }
 .phone-app.has-background .do-button,
 .phone-app.has-background .do-history,
 .phone-app.has-background .memory.text-only p { box-shadow: 0 8px 28px rgba(0,0,0,.12); }
@@ -447,20 +446,6 @@ textarea {
   background: var(--surface);
   font-size: 18px;
   line-height: 1.55;
-}
-.memory > button {
-  margin-left: 5px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--accent);
-  font-size: 14px;
-}
-.memories-empty {
-  margin: 0;
-  padding: 26px 5px;
-  color: var(--secondary);
-  font-size: 15px;
 }
 .memories-header {
   padding-bottom: 18px;

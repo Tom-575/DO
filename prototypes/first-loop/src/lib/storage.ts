@@ -63,7 +63,15 @@ export function loadSettings(): AppSettings {
         ? partial.theme
         : defaultSettings.theme;
     const background = typeof partial.background === 'string' ? partial.background : defaultSettings.background;
-    return { theme, background };
+    const ai =
+      partial.ai && typeof partial.ai === 'object'
+        ? {
+            baseURL: typeof partial.ai.baseURL === 'string' ? partial.ai.baseURL : '',
+            model: typeof partial.ai.model === 'string' ? partial.ai.model : '',
+            apiKey: typeof partial.ai.apiKey === 'string' ? partial.ai.apiKey : '',
+          }
+        : undefined;
+    return { theme, background, ...(ai ? { ai } : {}) };
   } catch {
     return { ...defaultSettings };
   }

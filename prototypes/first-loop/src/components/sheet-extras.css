@@ -1,0 +1,132 @@
+/* AppearanceSheet 的「AI」与「数据」分组(#8 设置部分 / #12 数据备份)。
+   只用 styles.css 既有 token,明暗两套主题自动生效;视觉语言对齐 .choice-row(1px 描边 + 12px 圆角 + 46px 高)。 */
+
+/* 分组增多后 Sheet 可能高过小屏视口:限高并内部滚动(覆盖 styles.css 的同 selectors,后加载生效) */
+.appearance-sheet {
+  max-height: min(82dvh, 720px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ---------- AI 配置 ---------- */
+
+.sheet-field {
+  display: block;
+  margin-top: 10px;
+}
+.sheet-field span {
+  display: block;
+  margin: 0 2px 6px;
+  color: var(--secondary);
+  font-size: 13px;
+}
+.sheet-field input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.sheet-field input:focus {
+  border-color: var(--accent);
+}
+.sheet-field input::placeholder {
+  color: var(--tertiary);
+}
+
+.sheet-status {
+  margin: 10px 2px 0;
+  color: var(--secondary);
+  font-size: 13px;
+}
+.sheet-status.ready {
+  color: var(--accent);
+}
+
+/* ---------- 导出 / 导入 ---------- */
+
+.sheet-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.sheet-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 46px;
+  padding: 0 10px;
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--secondary);
+  font-size: 13px;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.sheet-action:active {
+  transform: scale(0.985);
+}
+.sheet-action:disabled {
+  opacity: 0.55;
+}
+
+.sheet-confirm {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.sheet-confirm p {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.sheet-confirm-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.sheet-confirm-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--secondary);
+  font-size: 14px;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.sheet-confirm-actions button:active {
+  transform: scale(0.985);
+}
+.sheet-confirm-actions button.primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.sheet-confirm-actions button:disabled {
+  opacity: 0.6;
+}
+
+/* 行内反馈文字(成功/失败/说明),不用 alert */
+.sheet-note {
+  margin: 10px 2px 0;
+  color: var(--tertiary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sheet-note.alert {
+  color: var(--accent);
+}

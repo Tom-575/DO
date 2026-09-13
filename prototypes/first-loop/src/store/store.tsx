@@ -84,6 +84,14 @@ function reducer(state: StoreState, action: AppAction): StoreState {
       };
     case 'setSettings':
       return { ...state, settings: { ...state.settings, ...action.settings } };
+    case 'importData':
+      // 备份恢复(#12):整体替换,不与现有数据合并;排序维持「按 createdAt 倒序」的存放约定,
+      // 持久化由下方 dos/records 的写回 effect 自动完成。
+      return {
+        ...state,
+        dos: [...action.dos].sort((a, b) => b.createdAt - a.createdAt),
+        records: [...action.records].sort((a, b) => b.createdAt - a.createdAt),
+      };
     case 'setTab':
       return { ...state, tab: action.tab };
     case 'goHome':

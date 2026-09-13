@@ -47,8 +47,10 @@ export type AppAction =
   | { type: 'addRecord'; text: string; images?: RecordImage[]; refined?: string; linkedDOId?: string }
   /** 局部更新某条记录(如 #4 的整理版编辑) */
   | { type: 'updateRecord'; id: string; patch: Partial<Omit<MemoryRecord, 'id'>> }
-  /** 合并更新设置(theme/background,后续 AI 配置也走这里) */
+  /** 合并更新设置(theme/background/ai) */
   | { type: 'setSettings'; settings: Partial<AppSettings> }
+  /** 数据备份恢复(#12):用备份文件内容整体替换 dos/records(overwrite 语义,调用方先经用户确认) */
+  | { type: 'importData'; dos: DO[]; records: MemoryRecord[] }
   | { type: 'setTab'; tab: Tab }
   | { type: 'goHome' }
   | { type: 'setScreen'; screen: Screen }
