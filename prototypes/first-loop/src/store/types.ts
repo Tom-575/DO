@@ -22,7 +22,7 @@ import type {
 
 export type Tab = 'today' | 'memories';
 
-export type Screen = 'home' | 'input' | 'action';
+export type Screen = 'home' | 'input' | 'action' | 'record';
 
 export interface UIState {
   tab: Tab;

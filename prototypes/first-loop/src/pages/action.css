@@ -32,3 +32,85 @@
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent);
 }
+
+/* #8 真实 AI:「换一个 / 改念头」次级操作,贴在行动卡下方,风格与 .intent-row 一致,不做大按钮 */
+
+.action-tweaks {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.action-tweaks button {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--secondary);
+  font-size: 13px;
+  font-weight: 500;
+  transition: transform 0.15s, background 0.15s, color 0.15s;
+}
+
+.action-tweaks button:active {
+  transform: scale(0.97);
+}
+
+.action-tweaks button:disabled {
+  color: var(--tertiary);
+}
+
+/* 生成中(首次或换一个):占位标题与「想一下…」都退为 tertiary,不与内容竞争 */
+.action-pending {
+  color: var(--tertiary);
+}
+
+/* #8 真实 AI:改念头的行内编辑,替换 .source-idea 那一行 */
+
+.idea-edit {
+  margin: 0 0 22px;
+}
+
+.idea-edit textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  outline: 0;
+  resize: none;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.idea-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.idea-edit-actions button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.idea-edit-actions button.confirm {
+  color: var(--accent);
+}
+
+/* :disabled 放在 .confirm 之后,禁用的确认键退为 tertiary */
+.idea-edit-actions button:disabled {
+  color: var(--tertiary);
+}

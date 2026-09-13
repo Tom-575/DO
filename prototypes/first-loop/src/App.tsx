@@ -5,6 +5,7 @@ import TodayPage from './pages/TodayPage';
 import MemoriesPage from './pages/MemoriesPage';
 import InputPage from './pages/InputPage';
 import ActionPage from './pages/ActionPage';
+import RecordPage from './pages/RecordPage';
 import TabBar from './components/TabBar';
 import AppearanceSheet from './components/AppearanceSheet';
 
@@ -18,6 +19,7 @@ export default function App() {
       <AnimatePresence mode="wait" initial={false}>
         {screen === 'input' && <InputPage key="input" />}
         {screen === 'action' && <ActionPage key="action" />}
+        {screen === 'record' && <RecordPage key="record" />}
         {screen === 'home' && <motion.section className="page main-page" key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : .18 }}>
           <div className="app-scroll">
             {tab === 'today' ? <TodayPage /> : <MemoriesPage />}
