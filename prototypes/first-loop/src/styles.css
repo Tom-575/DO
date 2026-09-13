@@ -456,6 +456,12 @@ textarea {
   color: var(--accent);
   font-size: 14px;
 }
+.memories-empty {
+  margin: 0;
+  padding: 26px 5px;
+  color: var(--secondary);
+  font-size: 15px;
+}
 .memories-header {
   padding-bottom: 18px;
 }

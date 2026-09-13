@@ -18,11 +18,14 @@ export interface DO {
   parkedAt?: number;
 }
 
+/** 图片既可以是地址/URL(字符串),也可以是存进 IndexedDB 的原始 Blob */
+export type RecordImage = string | Blob;
+
 export interface MemoryRecord {
   id: string;
   text: string;
   refined?: string;
-  images: string[];
+  images: RecordImage[];
   linkedDOId?: string;
   createdAt: number;
 }
