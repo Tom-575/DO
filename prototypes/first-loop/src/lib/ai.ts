@@ -1,5 +1,5 @@
-import { getAction } from './mock';
-import type { AppSettings, DOAction, MemoryRecord } from '../types';
+import { getAction, planActionMock } from './mock';
+import type { AppSettings, DOAction, MemoryRecord, PlanReply, PlanTurn } from '../types';
 
 /**
  * AI 统一入口(adapter)。
@@ -35,6 +35,14 @@ export async function refineRecord(record: MemoryRecord, settings: AppSettings):
     return refineRecordRemote(record, settings.ai!);
   }
   return refineRecordMock(record);
+}
+
+/** 多轮对话规划(#15):history 首条必为用户原话;已配置走远程,任何失败自动回落 mock */
+export async function planAction(history: PlanTurn[], settings: AppSettings): Promise<PlanReply> {
+  if (isAIConfigured(settings)) {
+    return planActionRemote(history, settings.ai!);
+  }
+  return planActionMock(history);
 }
 
 /* ---------- mock 实现(无 key 时的兜底,行为与 #8 前一致) ---------- */
@@ -81,8 +89,43 @@ const REFINE_SYSTEM_PROMPT = `你是 DO，用户的行动伙伴。用户回来�
 
 只输出整理后的记录文字本身：一段纯文本，不带标题、序号、引号、表情，不要任何解释、前后缀或客套。`;
 
-/** 发送一次 chat/completions 请求,返回首条回复文本;失败抛错(错误信息只含状态码等,绝不含密钥) */
+/** 对话规划(#15):系统提示词即对话契约——能不问就不问,至多两问,到点必须给行动;JSON 是唯一输出 */
+const PLAN_SYSTEM_PROMPT = `你是 DO，帮用户把一个模糊念头变成可以开始的最小行动。先用简短对话弄清用户想做什么，然后给出一个行动。
+
+对话规则：
+- 只有当不同理解会明显改变行动时才提问；每次最多问一个问题，问题要短，并附上好选的回答选项。
+- 能不问就不问：用户说得够清楚就直接给行动。
+- 你的提问总数不能超过 2 次。
+
+给行动时遵守：
+- 每次只给一个最小行动；不列清单，不生成完整计划。
+- 行动要适合用户当下的时间、地点、能力和资源，准备成本低；title 写第一步，具体到现在就能动手。
+- 行动要小：通常 5–30 分钟内就能停下来，能更短更好；stop 必须是明确的停止或完成条件。
+- 开始本身就是成功：不提完成率、连续打卡，不用励志口号施压。
+- 涉及危险、医疗等高风险活动时，改给一个更安全的替代行动。
+- 用户的第一条消息是念头的原话，它是这个念头的本名；行动里不要改写或替换它。
+- 全部用中文，语气平实直接，文字要短，别让建议本身成为开始的障碍。
+
+只输出一个 JSON 对象，不要代码栅栏、解释或任何额外文字。两种格式二选一：
+提问：{"kind":"question","text":"一句简短的问题","options":["可选回答一","可选回答二"]}
+行动：{"kind":"action","action":{"title":"现在具体做的第一步","time":"预计时长，如：大约 10 分钟","stop":"明确的停止条件"}}`;
+
+/** 红线追加段(#15):assistant 已问满 2 次,第三次交互不再给模型提问的余地 */
+const PLAN_FORCE_ACTION = `
+
+这是第三次交互，禁止再提问，必须直接给出行动。`;
+
+/** 发送一次单轮 chat/completions 请求,返回首条回复文本;失败抛错(错误信息只含状态码等,绝不含密钥) */
 async function chatCompletion(config: AIClientConfig, system: string, user: string): Promise<string> {
+  return chatCompletionMessages(config, system, [{ role: 'user', content: user }]);
+}
+
+/** 多轮版本(#15 对话规划):system 置顶,history 按原顺序进 messages;失败抛错,错误信息绝不含密钥 */
+async function chatCompletionMessages(
+  config: AIClientConfig,
+  system: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>,
+): Promise<string> {
   const url = `${config.baseURL.replace(/\/$/, '')}/chat/completions`;
   const response = await fetch(url, {
     method: 'POST',
@@ -90,10 +133,7 @@ async function chatCompletion(config: AIClientConfig, system: string, user: stri
     body: JSON.stringify({
       model: config.model,
       temperature: 0.8,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
+      messages: [{ role: 'system', content: system }, ...history],
     }),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
@@ -118,6 +158,36 @@ function parseActionJSON(raw: string): DOAction {
   const stop = typeof parsed.stop === 'string' ? parsed.stop.trim() : '';
   if (!title || !time || !stop) throw new Error('AI 返回的行动字段不完整');
   return { title, time, stop };
+}
+
+/** 解析对话规划 JSON(#15):question 只需非空 text;action 复用行动字段的完整性校验;两种都不是就抛错 */
+function parsePlanJSON(raw: string): PlanReply {
+  let text = raw.trim();
+  const fenced = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenced) text = fenced[1].trim();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end <= start) throw new Error('AI 返回中没有 JSON');
+  const parsed = JSON.parse(text.slice(start, end + 1)) as {
+    kind?: unknown;
+    text?: unknown;
+    options?: unknown;
+    action?: unknown;
+  };
+  if (parsed.kind === 'question') {
+    const question = typeof parsed.text === 'string' ? stripWrappingQuotes(parsed.text.trim()) : '';
+    if (!question) throw new Error('AI 返回的提问内容为空');
+    // 选项可有可无;只保留非空字符串,空数组视同没有选项
+    const options = Array.isArray(parsed.options)
+      ? parsed.options.map((option) => (typeof option === 'string' ? option.trim() : '')).filter(Boolean)
+      : [];
+    return { kind: 'question', text: question, ...(options.length ? { options } : {}) };
+  }
+  if (parsed.kind === 'action') {
+    // 行动结构与「生成行动」契约一致,直接复用同一套字段校验
+    return { kind: 'action', action: parseActionJSON(JSON.stringify(parsed.action ?? {})) };
+  }
+  throw new Error('AI 返回的 kind 不是 question/action');
 }
 
 /** 模型偶尔会给整段输出包一层引号;只剥掉首尾同一对引号,不碰内容内部的标点 */
@@ -159,5 +229,20 @@ async function refineRecordRemote(record: MemoryRecord, config: AIClientConfig):
   } catch (err) {
     console.warn('[DO] AI 整理记录失败，回落本地模板：', err instanceof Error ? err.message : String(err));
     return refineRecordMock(record);
+  }
+}
+
+async function planActionRemote(history: PlanTurn[], config: AIClientConfig): Promise<PlanReply> {
+  try {
+    const asked = history.filter((turn) => turn.role === 'assistant').length;
+    // 红线:assistant 提问满 2 次后,系统提示词强制直接给行动;模型仍回提问时按违规处理,回落 mock 的行动
+    const system = asked >= 2 ? PLAN_SYSTEM_PROMPT + PLAN_FORCE_ACTION : PLAN_SYSTEM_PROMPT;
+    const content = await chatCompletionMessages(config, system, history.map((turn) => ({ role: turn.role, content: turn.text })));
+    const reply = parsePlanJSON(content);
+    if (asked >= 2 && reply.kind === 'question') throw new Error('AI 在第三次交互仍返回提问');
+    return reply;
+  } catch (err) {
+    console.warn('[DO] AI 对话规划失败，回落本地模拟：', err instanceof Error ? err.message : String(err));
+    return planActionMock(history);
   }
 }

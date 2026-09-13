@@ -42,3 +42,14 @@ export interface AppState {
   records: MemoryRecord[];
   settings: AppSettings;
 }
+
+/** AI 对话规划(#15)的一轮对话;assistant 文本取模型原样输出,不二次包装 */
+export interface PlanTurn {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+/** 对话规划的单步结果:question 附可选快捷回答;action 即最终行动,对话到此结束 */
+export type PlanReply =
+  | { kind: 'question'; text: string; options?: string[] }
+  | { kind: 'action'; action: DOAction };
