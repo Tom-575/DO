@@ -1,6 +1,6 @@
 # Deploy: 修复记录页图片上传静默失败
 
-status: active
+status: accepted
 candidate_revision: working tree @ df2be1b
 source_evidence: test.md(verdict pass)
 release_owner: 待人工放行
@@ -49,13 +49,14 @@ HMR 已推送;用户刷新页面后即用新代码。
 
 ## Approval
 
-- approved_by: (待人工)
-- approved_at:
+- approved_by: user(对话指令「启动部署」)
+- approved_at: 2026-09-13
 
 ## Deployment result
 
-dev 环境已生效。
+✅ 已发布:run 34758824216 success;https://tom-575.github.io/DO/ 返回 200,
+线上 bundle index-BXLduAMJ.js 与本地构建一致,修复已包含在内。
 
 ## Post-deploy checks
 
-用户真实选图体验(含多图)。
+待用户线上真实选图复核。

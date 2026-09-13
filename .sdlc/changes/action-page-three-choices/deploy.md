@@ -1,6 +1,6 @@
 # Deploy: 行动页收敛为三选:马上做/等等/不想做了
 
-status: active
+status: accepted
 candidate_revision: working tree @ df2be1b
 source_evidence: test.md(verdict pass)
 release_owner: 待人工放行
@@ -49,13 +49,14 @@ HMR 已推送至打开的页面;正式发布随下次 GitHub Pages 部署。
 
 ## Approval
 
-- approved_by: (待人工)
-- approved_at:
+- approved_by: user(对话指令「启动部署」)
+- approved_at: 2026-09-13
 
 ## Deployment result
 
-dev 环境已生效。
+✅ 已发布:run 34758824216 success;https://tom-575.github.io/DO/ 返回 200,
+线上 bundle index-BXLduAMJ.js 与本地构建一致,含三选新代码。
 
 ## Post-deploy checks
 
-用户试用反馈(换一个/改念头移除后的接受度)。
+线上内容已验证(三选标记「马上做/不想做了」均在 bundle 中);真机体验待用户走查。

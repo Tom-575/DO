@@ -1,0 +1,30 @@
+id: action-page-three-choices
+title: "\u884C\u52A8\u9875\u6536\u655B\u4E3A\u4E09\u9009:\u9A6C\u4E0A\u505A/\u7B49\
+  \u7B49/\u4E0D\u60F3\u505A\u4E86"
+stage: deploy
+risk: low
+gate: deployed-stable
+owner: ''
+stage_owners:
+  plan: tom57
+  design: tom57
+  build: tom57
+  test: tom57
+  deploy: tom57
+  maintain: tom57
+source: "\u7528\u6237\u53CD\u9988:\u9009\u9879\u592A\u591A"
+issue: ''
+pr: ''
+supersedes: null
+plan: .sdlc/changes/action-page-three-choices/plan.md
+design: .sdlc/changes/action-page-three-choices/design.md
+build: .sdlc/changes/action-page-three-choices/build.md
+test: .sdlc/changes/action-page-three-choices/test.md
+deploy: .sdlc/changes/action-page-three-choices/deploy.md
+maintain: null
+gate_approved_by: user
+gate_approved_at: '2026-09-13 13:11:10.442289+00:00'
+gate_note: "\u7EBF\u4E0A\u9A8C\u8BC1:run 34758824216 success,bundle \u4E0E\u672C\u5730\
+  \u6784\u5EFA\u4E00\u81F4"
+archived_at: '2026-09-13 13:11:10.714039+00:00'
+archive_note: "\u5DF2\u4E0A\u7EBF\u5E76\u9A8C\u8BC1"

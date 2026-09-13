@@ -1,0 +1,30 @@
+id: record-image-upload-fix
+title: "\u4FEE\u590D\u8BB0\u5F55\u9875\u56FE\u7247\u4E0A\u4F20\u9759\u9ED8\u5931\u8D25"
+stage: deploy
+risk: low
+gate: deployed-stable
+owner: ''
+stage_owners:
+  plan: tom57
+  design: tom57
+  build: tom57
+  test: tom57
+  deploy: tom57
+  maintain: tom57
+source: "\u7528\u6237\u53CD\u9988:\u8BB0\u5F55\u4E0A\u4F20\u4E0D\u4E86\u56FE\u7247\
+  (\u4E24\u6B21)"
+issue: ''
+pr: ''
+supersedes: null
+plan: .sdlc/changes/record-image-upload-fix/plan.md
+design: .sdlc/changes/record-image-upload-fix/design.md
+build: .sdlc/changes/record-image-upload-fix/build.md
+test: .sdlc/changes/record-image-upload-fix/test.md
+deploy: .sdlc/changes/record-image-upload-fix/deploy.md
+maintain: null
+gate_approved_by: user
+gate_approved_at: '2026-09-13 13:11:10.530826+00:00'
+gate_note: "\u7EBF\u4E0A\u9A8C\u8BC1:run 34758824216 success,\u4FEE\u590D\u5DF2\u5728\
+  \u7EBF\u4E0A bundle \u4E2D"
+archived_at: '2026-09-13 13:11:10.812287+00:00'
+archive_note: "\u5DF2\u4E0A\u7EBF\u5E76\u9A8C\u8BC1"

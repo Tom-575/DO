@@ -1,6 +1,6 @@
 # Deploy: MVP:记录闭环 H5(今天 + 记录 + 回忆)
 
-status: active
+status: accepted
 candidate_revision: 531b570
 source_evidence: .sdlc/changes/mvp-record-loop-h5/test.md
 release_owner: tom57
@@ -17,7 +17,7 @@ updated_at: 2026-09-13
 | 变更编号 | mvp-record-loop-h5 |
 | 发布负责人 | tom57 |
 | 目标环境 | GitHub Pages(生产,公开 URL) |
-| 当前状态 | 部署配置完成,等待首次发布验证与真机走查 |
+| 当前状态 | 已发布上线(run 34758824216 success,2026-09-13);剩真机走查 |
 
 ## 部署内容与方式
 
@@ -27,10 +27,11 @@ updated_at: 2026-09-13
 
 ## 放行清单(人工,当前阻塞点)
 
-- [ ] **用户在 GitHub 仓库 Settings → Pages → Source 选择「GitHub Actions」**
-      (首次配置必须;未配置时 workflow 会失败)
-- [ ] Actions 首次运行成功,https://tom-575.github.io/DO/ 可访问
-- [ ] 真机(iOS Safari / 安卓 Chrome)走通闭环 —— 对应 TODO #11
+- [x] **GitHub 仓库 Pages Source 选「GitHub Actions」**
+      ✅ 2026-09-13 由 ZCode 经 API 创建 Pages 站点(build_type=workflow)完成,此前所有 run 均因此失败
+- [x] Actions 运行成功,https://tom-575.github.io/DO/ 可访问
+      ✅ run 34758824216(2b6f391)success;线上 200,bundle 与本地构建哈希一致(index-BXLduAMJ.js),含三选新代码
+- [ ] 真机(iOS Safari / 安卓 Chrome)走通闭环 —— 对应 TODO #11(手机直接访问 https://tom-575.github.io/DO/ )
 
 ## 已知环境注意
 
