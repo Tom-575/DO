@@ -83,8 +83,8 @@
 
 ## 5. 动效规范
 
-- 页面 push/pop：x 方向 18% 位移 + 透明度，spring（stiffness 360 / damping 34）。
-- Tab 切换：0.18s 透明度渐变；展开收起：height auto 0.22s。
+- 页面切换：**进入有动效、切换即替换**（2026-09-13 决策）。motion 的 `AnimatePresence` 退出动画在部分嵌入式 webview 中永不结束、会卡死切页，故页面渲染不依赖退出机制；进入动效由各页面根节点的 `initial → animate` 承担（push 页：x 18% 位移 + 透明度，spring stiffness 360 / damping 34；首页 Tab 切换：0.18s 透明度渐变）。
+- 展开收起：height auto 0.22s（展开动画；收起为立即收起，同上原因）。
 - Sheet：0.28s `cubic-bezier(.2,.8,.2,1)` 上滑 + scrim 淡入 0.2s。
 - 全局响应 `prefers-reduced-motion`（reduce 时时长归零、禁用动画）。
 - 禁止：弹跳、旋转、无限漂浮等无物理意义的动效。

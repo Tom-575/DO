@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { useAppState } from './store/store';
 import TodayPage from './pages/TodayPage';
 import MemoriesPage from './pages/MemoriesPage';
@@ -28,18 +28,18 @@ export default function App() {
       : { backgroundImage: builtinBackground ?? `linear-gradient(var(--backdrop),var(--backdrop)),url(${background})` };
   return <div className={`prototype-frame theme-${theme}`}>
     <div className={`phone-app ${background !== 'none' ? 'has-background' : ''}`} style={backgroundStyle}>
-      <AnimatePresence mode="wait" initial={false}>
-        {screen === 'input' && <InputPage key="input" />}
-        {screen === 'action' && <ActionPage key="action" />}
-        {screen === 'record' && <RecordPage key="record" />}
-        {screen === 'home' && <motion.section className="page main-page" key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : .18 }}>
-          <div className="app-scroll">
-            {tab === 'today' ? <TodayPage /> : <MemoriesPage />}
-          </div>
-          <TabBar />
-          {appearanceOpen && <AppearanceSheet />}
-        </motion.section>}
-      </AnimatePresence>
+      {/* 页面切换不使用 AnimatePresence:其退出动画在部分嵌入式 webview 中永远不结束,会卡死切页。
+          采用「进入有动效、切换即替换」的确定性方案,进入动效由各页面根节点的 initial/animate 承担。 */}
+      {screen === 'input' && <InputPage key="input" />}
+      {screen === 'action' && <ActionPage key="action" />}
+      {screen === 'record' && <RecordPage key="record" />}
+      {screen === 'home' && <motion.section className="page main-page" key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: reduceMotion ? 0 : .18 }}>
+        <div className="app-scroll">
+          {tab === 'today' ? <TodayPage /> : <MemoriesPage />}
+        </div>
+        <TabBar />
+        {appearanceOpen && <AppearanceSheet />}
+      </motion.section>}
     </div>
   </div>;
 }

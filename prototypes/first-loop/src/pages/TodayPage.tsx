@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { CaretDown, CaretRight, UserCircle } from '@phosphor-icons/react';
 import { selectHomeQueue, useAppState, useDispatch } from '../store/store';
 import { formatDate } from '../lib/date';
@@ -40,11 +40,11 @@ export default function TodayPage() {
         <div className="previous-heading"><h3>最近的 DO</h3>{canExpand && <button onClick={() => dispatch({ type: 'toggleHistory' })} aria-label={historyOpen ? '收起更多 DO' : '展开更多 DO'} aria-expanded={historyOpen}><CaretDown className={historyOpen ? 'rotated' : ''} size={16} weight="bold" /></button>}</div>
         <div className="do-history">
           {rows.map((item, index) => <PreviousRow key={item.id} className={index > 0 ? 'divided' : undefined} muted={mutedIds.has(item.id)} text={item.thought} onClick={() => openDO(item)} />)}
-          <AnimatePresence initial={false}>{historyOpen && <motion.div className="earlier-dos" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: reduceMotion ? 0 : .22 }}>
+          {historyOpen && <motion.div className="earlier-dos" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} transition={{ duration: reduceMotion ? 0 : .22 }}>
             {extra.map((item) => <PreviousRow className="earlier-row" key={item.id} text={item.thought} onClick={() => openDO(item)} />)}
             {recycled.length > 0 && <p className="recycled-label">放了超过一天</p>}
             {recycled.map((item) => <PreviousRow className="earlier-row" muted key={item.id} text={item.thought} onClick={() => openDO(item)} />)}
-          </motion.div>}</AnimatePresence>
+          </motion.div>}
         </div>
       </section>}
     </main>
