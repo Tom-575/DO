@@ -20,7 +20,7 @@ export const SCHEMA_VERSION = 1;
 
 export const defaultSettings: AppSettings = {
   theme: 'system',
-  background: '/assets/mountain-walk.jpg',
+  background: `${import.meta.env.BASE_URL}assets/mountain-walk.jpg`,
 };
 
 /* ---------- IndexedDB:DO 与记录 ---------- */

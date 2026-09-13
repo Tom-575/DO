@@ -39,8 +39,8 @@ export type StoreState = AppState & UIState;
 export type AppAction =
   /** 启动时从 IndexedDB 读入数据,与内存中已有内容合并(按 createdAt 倒序) */
   | { type: 'hydrate'; dos: DO[]; records: MemoryRecord[] }
-  /** 创建 DO:id/createdAt 由 store 生成;现在开始→status 待记录;先放着→status 待定 + parkedAt */
-  | { type: 'addDO'; thought: string; action: DOAction; status: DOStatus; parkedAt?: number; intent?: DOIntent | null }
+  /** 创建 DO:id/createdAt 由 store 生成,调用方也可预生成 id 传入(行动页先记意向再开始时指向同一条);现在开始→status 待记录;先放着→status 待定 + parkedAt */
+  | { type: 'addDO'; id?: string; thought: string; action: DOAction; status: DOStatus; parkedAt?: number; intent?: DOIntent | null }
   /** 局部更新某个 DO(状态流转、意向、行动内容等) */
   | { type: 'updateDO'; id: string; patch: Partial<Omit<DO, 'id'>> }
   /** 创建记录:id/createdAt 由 store 生成;带 linkedDOId 时该 DO 自动变「已记录」 */

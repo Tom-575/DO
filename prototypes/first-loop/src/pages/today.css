@@ -1,0 +1,39 @@
+/* TodayPage 专属样式(#5 首页 DO 管理)。只用 styles.css 既有 token,不引入新的视觉语言。 */
+
+/* inset 列表里第二行(备选/回收兜底行)与上一行之间的分隔线 */
+.previous-row.divided {
+  position: relative;
+}
+.previous-row.divided::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 15px;
+  height: 1px;
+  background: var(--separator);
+}
+
+/* 超过 24h 回收的待定 DO:只降低文字亮度,状态变化不用新颜色 */
+.previous-row.recycled span {
+  color: var(--tertiary);
+}
+
+/* 展开区里回收分组的说明行(13px 辅助字阶,与 previous-heading 一致) */
+.recycled-label {
+  position: relative;
+  margin: 0;
+  padding: 10px 15px 5px;
+  color: var(--tertiary);
+  font-size: 13px;
+  text-align: left;
+}
+.recycled-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 15px;
+  height: 1px;
+  background: var(--separator);
+}

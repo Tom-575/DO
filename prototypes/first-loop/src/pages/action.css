@@ -1,0 +1,34 @@
+/* ActionPage 行动意向三选(#5)。轻量次级按钮,风格对齐 .secondary-action:无边框、透明底,不做大 CTA。 */
+
+.intent-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.intent-row button {
+  min-height: 40px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--secondary);
+  font-size: 13px;
+  font-weight: 500;
+  transition: transform 0.15s, background 0.15s, color 0.15s;
+}
+
+.intent-row button:active {
+  transform: scale(0.97);
+}
+
+.intent-row button:disabled {
+  color: var(--tertiary);
+}
+
+/* 选中态对齐外观 Sheet 的 active 处理:accent 10-12% 底 + accent 文字,不加边框 */
+.intent-row button.selected {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}

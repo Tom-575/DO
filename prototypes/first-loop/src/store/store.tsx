@@ -19,7 +19,7 @@ import {
  *   组件一律通过 dispatch 间接持久化,不直接碰存储。
  */
 
-function createId(): string {
+export function createId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
@@ -51,7 +51,7 @@ function reducer(state: StoreState, action: AppAction): StoreState {
       };
     case 'addDO': {
       const item: DO = {
-        id: createId(),
+        id: action.id ?? createId(),
         thought: action.thought,
         action: action.action,
         status: action.status,
@@ -106,6 +106,39 @@ function reducer(state: StoreState, action: AppAction): StoreState {
 interface Store {
   state: StoreState;
   dispatch: Dispatch<AppAction>;
+}
+
+/* ---------- 首页推荐与 24h 回收(#5) ---------- */
+
+/** 回收只是展示层口径,不改动状态、不写库:待定 DO 停放超过 24 小时即不再占据首页主/备选位 */
+export const PENDING_RECYCLE_MS = 24 * 60 * 60 * 1000;
+
+/** 待定 DO 是否已过 24h 回收线(锚点是 parkedAt,缺失时按 createdAt 计) */
+export function isRecycledPending(item: DO, now: number): boolean {
+  if (item.status !== '待定') return false;
+  return now - (item.parkedAt ?? item.createdAt) >= PENDING_RECYCLE_MS;
+}
+
+export interface HomeQueue {
+  /** 主推荐:最新的活跃 DO(待定/待记录) */
+  main: DO | undefined;
+  /** 备选:次新的活跃 DO */
+  alternate: DO | undefined;
+  /** 收起区展开后再显示的其余候选,最多 3 条;更早的念头留在 store,不并列展示 */
+  extra: DO[];
+  /** 超过 24h 的待定 DO,排在展开区末尾;已记录的 DO 不在此列(痕迹在回忆页) */
+  recycled: DO[];
+}
+
+export function selectHomeQueue(dos: DO[], now: number): HomeQueue {
+  const byRecency = [...dos].sort((a, b) => b.createdAt - a.createdAt);
+  const active: DO[] = [];
+  const recycled: DO[] = [];
+  for (const item of byRecency) {
+    if (item.status === '已记录') continue;
+    (isRecycledPending(item, now) ? recycled : active).push(item);
+  }
+  return { main: active[0], alternate: active[1], extra: active.slice(2, 5), recycled };
 }
 
 const StoreContext = createContext<Store | null>(null);
