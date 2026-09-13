@@ -33,6 +33,8 @@ export interface MemoryRecord {
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   background: string;
+  /** AI 客户端配置;缺省或字段不完整 = 未接入真实 AI,走 mock */
+  ai?: import('./lib/ai').AIClientConfig;
 }
 
 export interface AppState {
