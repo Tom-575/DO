@@ -6,4 +6,11 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   base: '/DO/',
+  // 本机 fs 事件不可靠(编辑后 HMR 偶发不生效,供应过期模块),改用轮询监视
+  server: {
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
+  },
 });
