@@ -1,13 +1,8 @@
-/* ActionPage 行动意向三选(#5)。轻量次级按钮,风格对齐 .secondary-action:无边框、透明底,不做大 CTA。 */
+/* ActionPage 底部三选(#5):马上做 / 等等 / 不想做了。
+   马上做与等等复用全局 .primary-action / .secondary-action;这里只定义第三档的静默按钮。 */
 
-.intent-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 9px;
-}
-
-.intent-row button {
+/* 不想做了:轻量灰字,与「等等」拉开层级,不与内容竞争 */
+.quiet-action {
   min-height: 40px;
   padding: 0 4px;
   border: 0;
@@ -16,101 +11,18 @@
   color: var(--secondary);
   font-size: 13px;
   font-weight: 500;
-  transition: transform 0.15s, background 0.15s, color 0.15s;
+  transition: transform 0.15s, color 0.15s;
 }
 
-.intent-row button:active {
+.quiet-action:active {
   transform: scale(0.97);
 }
 
-.intent-row button:disabled {
+.quiet-action:disabled {
   color: var(--tertiary);
 }
 
-/* 选中态对齐外观 Sheet 的 active 处理:accent 10-12% 底 + accent 文字,不加边框 */
-.intent-row button.selected {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-
-/* #8 真实 AI:「换一个 / 改念头」次级操作,贴在行动卡下方,风格与 .intent-row 一致,不做大按钮 */
-
-.action-tweaks {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.action-tweaks button {
-  flex: 1;
-  min-height: 40px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--secondary);
-  font-size: 13px;
-  font-weight: 500;
-  transition: transform 0.15s, background 0.15s, color 0.15s;
-}
-
-.action-tweaks button:active {
-  transform: scale(0.97);
-}
-
-.action-tweaks button:disabled {
-  color: var(--tertiary);
-}
-
-/* 生成中(首次或换一个):占位标题与「想一下…」都退为 tertiary,不与内容竞争 */
+/* 生成中:占位标题退为 tertiary,不与内容竞争 */
 .action-pending {
-  color: var(--tertiary);
-}
-
-/* #8 真实 AI:改念头的行内编辑,替换 .source-idea 那一行 */
-
-.idea-edit {
-  margin: 0 0 22px;
-}
-
-.idea-edit textarea {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 12px;
-  outline: 0;
-  resize: none;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.45;
-}
-
-.idea-edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.idea-edit-actions button {
-  min-height: 34px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.idea-edit-actions button.confirm {
-  color: var(--accent);
-}
-
-/* :disabled 放在 .confirm 之后,禁用的确认键退为 tertiary */
-.idea-edit-actions button:disabled {
   color: var(--tertiary);
 }
