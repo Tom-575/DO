@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { CaretDown, CaretRight, UserCircle } from '@phosphor-icons/react';
+import { CaretDown, UserCircle } from '@phosphor-icons/react';
 import { selectHomeQueue, useAppState, useDispatch } from '../store/store';
 import { formatDate } from '../lib/date';
 import type { DO } from '../types';
@@ -35,7 +35,7 @@ export default function TodayPage() {
   return <>
     <header className="large-header"><div><span>{formatDate(new Date())}</span><h1>今天</h1></div><button aria-label="外观设置" onClick={() => dispatch({ type: 'setAppearanceOpen', open: true })}><UserCircle size={32} weight="light" /></button></header>
     <main className="today-content">
-      <section className="do-intro"><h2>现在想做什么？</h2><p>先写下来。DO 会把它变成可以开始的一步。</p><DOButton onClick={() => { dispatch({ type: 'setActiveDO', id: null }); dispatch({ type: 'setIdea', idea: '' }); dispatch({ type: 'setScreen', screen: 'input' }); }} /><button className="record-entry" onClick={() => dispatch({ type: 'setScreen', screen: 'record' })}><span>记录一下刚才做的事</span><CaretRight size={14} weight="bold" /></button></section>
+      <section className="do-intro"><h2>现在想做什么？</h2><p>先写下来。DO 会把它变成可以开始的一步。</p><DOButton onClick={() => { dispatch({ type: 'setActiveDO', id: null }); dispatch({ type: 'setIdea', idea: '' }); dispatch({ type: 'setScreen', screen: 'input' }); }} /></section>
       {rows.length > 0 && <section className="previous-section">
         <div className="previous-heading"><h3>最近的 DO</h3>{canExpand && <button onClick={() => dispatch({ type: 'toggleHistory' })} aria-label={historyOpen ? '收起更多 DO' : '展开更多 DO'} aria-expanded={historyOpen}><CaretDown className={historyOpen ? 'rotated' : ''} size={16} weight="bold" /></button>}</div>
         <div className="do-history">

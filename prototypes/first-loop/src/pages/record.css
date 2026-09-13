@@ -2,29 +2,6 @@
    只用 styles.css 既有 token 与全局类(nav-bar / icon-action / bottom-actions / primary-action);
    本页新增样式全部收敛在这里,不改全局样式。 */
 
-/* ---------- 今天页轻量次入口:一行文字 + 箭头,明显弱于 DO 主按钮 ---------- */
-
-.record-entry {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-top: 16px;
-  padding: 6px 0;
-  border: 0;
-  background: none;
-  color: var(--secondary);
-  font-size: 15px;
-  transition: opacity 0.15s;
-}
-
-.record-entry svg {
-  color: var(--tertiary);
-}
-
-.record-entry:active {
-  opacity: 0.55;
-}
-
 /* ---------- 页面骨架:导航栏 + 滚动内容 + 底部保存栏 ---------- */
 
 .record-page {

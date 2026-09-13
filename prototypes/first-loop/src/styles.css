@@ -242,10 +242,11 @@ textarea {
   background: var(--separator);
 }
 .tab-bar {
-  flex: 0 0 84px;
+  flex: 0 0 76px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  height: 84px;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 76px;
   padding: 8px 56px max(9px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--separator);
   background: color-mix(in srgb, var(--surface) 86%, transparent);
@@ -253,14 +254,19 @@ textarea {
 }
 .tab-bar button {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
   border: 0;
   background: none;
   color: var(--tertiary);
-  font-size: 10px;
+}
+.tab-bar button.tab-create {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.28);
 }
 .tab-bar button.selected {
   color: var(--accent);
