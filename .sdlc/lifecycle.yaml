@@ -1,33 +1,3 @@
 version: 1
 updated_at: '2026-09-14'
-active_changes:
-- id: memory-cover-feed-h5
-  title: "\u56DE\u5FC6\u5217\u8868\u53EA\u5C55\u793A\u9996\u56FE+\u5F20\u6570\u89D2\
-    \u6807,\u5168\u90E8\u56FE\u7247\u5728\u67E5\u770B\u5668\u5185\u7FFB\u770B"
-  stage: deploy
-  risk: low
-  gate: awaiting-human-review
-  owner: trae-agent
-  stage_owners:
-    plan: tom57
-    design: tom57
-    build: tom57
-    test: tom57
-    deploy: tom57
-    maintain: tom57
-  source: "\u7528\u6237\u53CD\u9988 2026-09-14:#17 \u4E0A\u7EBF\u540E\u591A\u56FE\u5728\
-    \u5217\u8868\u7EB5\u5411\u5806\u53E0\u8FC7\u91CD,\u5E94\u7C7B\u5C0F\u7EA2\u4E66\
-    \ feed \u53EA\u9732\u5C01\u9762"
-  issue: ''
-  pr: ''
-  supersedes: null
-  plan: .sdlc/changes/memory-cover-feed-h5/plan.md
-  design: .sdlc/changes/memory-cover-feed-h5/design.md
-  build: .sdlc/changes/memory-cover-feed-h5/build.md
-  test: .sdlc/changes/memory-cover-feed-h5/test.md
-  deploy: .sdlc/changes/memory-cover-feed-h5/deploy.md
-  maintain: null
-  gate_approved_by: "trae-agent(\u6D4F\u89C8\u5668\u9A8C\u8BC1\u5168\u8FC7,\u89C1\
-    \ test.md)"
-  gate_approved_at: '2026-09-14 13:42:29.778252+00:00'
-  gate_note: ''
+active_changes: []

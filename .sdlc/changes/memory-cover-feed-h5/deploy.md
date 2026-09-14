@@ -1,6 +1,6 @@
 # Deploy: 回忆列表只展示首图+张数角标,全部图片在查看器内翻看
 
-status: active
+status: accepted
 candidate_revision: 提交(见 Deployment result)
 source_evidence: test.md
 release_owner: trae-agent
@@ -54,9 +54,11 @@ push main,既有 GitHub Pages 管线自动发布。
 
 ## Deployment result
 
-(推送后回填)
+- commit 9ac2e5f push main 2026-09-14
+- GitHub Actions run 15(9ac2e5f):completed / success
+- Pages 线上已更新
 
 ## Post-deploy checks
 
-- [ ] Actions run 成功
+- [x] Actions run 成功
 - [ ] 用户真机走查(列表首图化 + 查看器横滑)
