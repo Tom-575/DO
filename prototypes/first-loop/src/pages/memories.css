@@ -1,9 +1,25 @@
 /* 回忆页本地样式(#7)。全局样式在 styles.css,这里只放回忆页新增的部分,不覆盖全局类名。 */
 
-/* 多图条目:图片纵向排列时的间距;单图不受影响 */
+/* 多图条目(#18):列表只展示首图,角标锚定在封面上 */
 .memory-images {
+  position: relative;
   display: grid;
   gap: 10px;
+}
+
+.memory-image-count {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
 }
 
 /* 点条目进编辑(#13);点图片区进查看器(#17):图片给可点的视觉暗示 */
