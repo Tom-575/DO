@@ -424,7 +424,8 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 0 5px 10px;
+  /* 右侧让出导出按钮(.memory-export 30px)宽度,避免钟点被压(#18 走查修复) */
+  padding: 0 42px 10px 5px;
 }
 .memory-time strong {
   font-size: 20px;

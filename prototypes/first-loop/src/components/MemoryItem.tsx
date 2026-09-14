@@ -12,7 +12,7 @@ interface MemoryItemProps {
 }
 
 /**
- * 回忆条目(#18):列表只展示首图(封面,原比例不裁切),多图右下角标提示总张数;
+ * 回忆条目(#18):列表只展示首图缩略(4:3 裁切,原比例在查看器看),多图右下角标提示总张数;
  * 点封面进全屏查看器横滑全部,点文字/其余进编辑。Blob 加载失败不静默:占位块明示。
  */
 export default function MemoryItem({ record, onEdit, onExport, onView }: MemoryItemProps) {
