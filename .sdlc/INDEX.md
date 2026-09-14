@@ -6,12 +6,12 @@ in their canonical artifacts.
 
 ## Current State
 
-- Active changes: 1
-- Lifecycle state: deploy
+- Active changes: 0
+- Lifecycle state: ready-for-plan
 - Last updated: 2026-09-14
 ## Active Changes
 
-- **image-experience-h5**: stage `deploy`, gate `awaiting-human-review`, risk `low`
+No active changes.
 ## Active Decisions
 
 No active decisions recorded.
