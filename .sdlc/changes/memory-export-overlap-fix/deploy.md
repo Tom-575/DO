@@ -1,6 +1,6 @@
 # Deploy: 修复回忆条目导出按钮与时间文字重叠
 
-status: active
+status: accepted
 candidate_revision: 提交(见 Deployment result)
 source_evidence: test.md
 release_owner: trae-agent
@@ -54,9 +54,11 @@ push main,既有 GitHub Pages 管线自动发布。
 
 ## Deployment result
 
-(推送后回填)
+- commit 8188d3a push main 2026-09-14
+- GitHub Actions run 17(8188d3a):completed / success
+- Pages 线上已更新
 
 ## Post-deploy checks
 
-- [ ] Actions run 成功
+- [x] Actions run 成功
 - [ ] 用户真机确认时间完整显示

@@ -1,0 +1,31 @@
+id: memory-export-overlap-fix
+title: "\u4FEE\u590D\u56DE\u5FC6\u6761\u76EE\u5BFC\u51FA\u6309\u94AE\u4E0E\u65F6\u95F4\
+  \u6587\u5B57\u91CD\u53E0"
+stage: maintain
+risk: low
+gate: awaiting-human-review
+owner: trae-agent
+stage_owners:
+  plan: tom57
+  design: tom57
+  build: tom57
+  test: tom57
+  deploy: tom57
+  maintain: tom57
+source: "\u7528\u6237\u622A\u56FE\u53CD\u9988 2026-09-14:.memory-export \u7EDD\u5BF9\
+  \u5B9A\u4F4D top:0 right:0 \u538B\u4F4F .memory-time \u53F3\u4FA7\u949F\u70B9"
+issue: ''
+pr: ''
+supersedes: null
+plan: .sdlc/changes/memory-export-overlap-fix/plan.md
+design: .sdlc/changes/memory-export-overlap-fix/design.md
+build: .sdlc/changes/memory-export-overlap-fix/build.md
+test: .sdlc/changes/memory-export-overlap-fix/test.md
+deploy: .sdlc/changes/memory-export-overlap-fix/deploy.md
+maintain: .sdlc/changes/memory-export-overlap-fix/maintain.md
+gate_approved_by: trae-agent(Actions run 17 success)
+gate_approved_at: '2026-09-14 13:49:51.707679+00:00'
+gate_note: ''
+archived_at: '2026-09-14 13:49:51.876048+00:00'
+archive_note: "\u90E8\u7F72\u6210\u529F(run 17),\u51E0\u4F55\u6821\u9A8C\u95F4\u8DDD\
+  12px;\u5F85\u7528\u6237\u771F\u673A\u786E\u8BA4"
