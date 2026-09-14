@@ -6,9 +6,15 @@
   gap: 10px;
 }
 
-/* 点条目进编辑(#13):导出按钮绝对定位需要锚点 */
+/* 点条目进编辑(#13);点图片区进查看器(#17):图片给可点的视觉暗示 */
 .memory {
   position: relative;
+}
+
+.memory-images img {
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 /* 导出卡片入口(#14):右上角小图标,不与正文点击冲突(内部已 stopPropagation) */
@@ -65,4 +71,97 @@
   margin: 0;
   color: var(--secondary);
   font-size: 13px;
+}
+
+/* ---------- 全屏图片查看器(#17):黑底、横滑切换、页码;应用内遮罩,同 card-overlay 模式 ---------- */
+
+.viewer-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  animation: fade-in 0.2s ease;
+  /* 纵向触摸不穿透到背后的回忆流;横向滑动只在 track 上 */
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.viewer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.viewer-action {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.viewer-action:active {
+  opacity: 0.7;
+}
+
+.viewer-count {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.viewer-track {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  /* 查看器内唯一可滚区域:只响应横向手势 */
+  touch-action: pan-x;
+}
+
+.viewer-track::-webkit-scrollbar {
+  display: none;
+}
+
+.viewer-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+}
+
+.viewer-slide img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 失败占位:查看器黑底下的中性块 */
+.viewer-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: min(60%, 240px);
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
 }

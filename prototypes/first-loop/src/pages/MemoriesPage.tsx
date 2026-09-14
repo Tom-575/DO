@@ -2,9 +2,17 @@ import { useRef, useState } from 'react';
 import { UserCircle } from '@phosphor-icons/react';
 import { useAppState, useDispatch } from '../store/store';
 import MemoryItem from '../components/MemoryItem';
+import ImageViewer from '../components/ImageViewer';
 import RecordCard from '../components/RecordCard';
 import type { MemoryRecord } from '../types';
 import './memories.css';
+
+/** 全屏看图(#17)的打开状态:条目 + objectURL 列表 + 起始页 */
+interface Viewing {
+  record: MemoryRecord;
+  urls: string[];
+  index: number;
+}
 
 export default function MemoriesPage() {
   const { records, dos } = useAppState();
@@ -13,6 +21,8 @@ export default function MemoriesPage() {
   const [cardRecord, setCardRecord] = useState<MemoryRecord | null>(null);
   const [exportError, setExportError] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  /* 全屏看图(#17):点图片区进入;编辑入口关闭查看器后走 openEdit */
+  const [viewing, setViewing] = useState<Viewing | null>(null);
 
   const openEdit = (record: MemoryRecord) => {
     dispatch({ type: 'setActiveRecordId', id: record.id });
@@ -46,8 +56,14 @@ export default function MemoriesPage() {
             <p className="memories-empty-title">还没有记录</p>
             <p className="memories-empty-hint">做过的事，回来写下就好。</p>
           </div>
-        : records.map((record) => <MemoryItem key={record.id} record={record} onEdit={openEdit} onExport={setCardRecord} />)}
+        : records.map((record) => <MemoryItem key={record.id} record={record} onEdit={openEdit} onExport={setCardRecord} onView={(urls, index) => setViewing({ record, urls, index })} />)}
     </main>
+    {viewing && <ImageViewer
+      urls={viewing.urls}
+      initialIndex={viewing.index}
+      onClose={() => setViewing(null)}
+      onEdit={() => { setViewing(null); openEdit(viewing.record); }}
+    />}
     {cardRecord && <div className="card-overlay" onClick={() => setCardRecord(null)}>
       <div className="card-panel" onClick={(event) => event.stopPropagation()}>
         <div ref={cardRef}><RecordCard record={cardRecord} dos={dos} /></div>

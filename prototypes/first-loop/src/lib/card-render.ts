@@ -1,7 +1,7 @@
 /**
  * 记录卡片绘制(#14)。Canvas 手绘而非 DOM 序列化:嵌入式 webview 里
  * html-to-image 的 foreignObject 路径会永久挂起,canvas 是唯一确定性方案。
- * 布局与 card.css 的视觉约定一致:白底、日期、1:1 封面、正文、念头行、签名。
+ * 布局与 card.css 的视觉约定一致:白底、日期、原比例封面(#16 不裁切)、正文、念头行、签名。
  * CJK 逐字换行即可,无需分词。
  */
 
@@ -61,6 +61,12 @@ async function loadCover(data: CardData): Promise<ImageBitmap | HTMLImageElement
   return null;
 }
 
+/** 读取图片固有尺寸:ImageBitmap 用 width/height,HTMLImageElement 用 naturalWidth/Height */
+function imageSize(image: ImageBitmap | HTMLImageElement): { width: number; height: number } {
+  if ('naturalWidth' in image) return { width: image.naturalWidth, height: image.naturalHeight };
+  return { width: image.width, height: image.height };
+}
+
 /** 渲染一张卡片到 canvas(2x 分辨率);先量后画,canvas 高度由内容决定 */
 export async function renderRecordCard(canvas: HTMLCanvasElement, data: CardData): Promise<void> {
   const scale = 2;
@@ -69,13 +75,17 @@ export async function renderRecordCard(canvas: HTMLCanvasElement, data: CardData
   measure.font = BODY_FONT;
   const bodyLines = data.body ? wrapText(measure, data.body, BODY_WIDTH) : [];
   const hasCover = Boolean(data.coverBlob || data.coverUrl);
+  // 封面先加载再量高(#16):原比例绘制不裁切,高度 = 宽度 × 原图比例;加载失败占位保持 1:1
+  const cover = hasCover ? await loadCover(data) : null;
+  const coverH = cover
+    ? Math.round((BODY_WIDTH * imageSize(cover).height) / imageSize(cover).width)
+    : hasCover ? BODY_WIDTH : 0;
 
   let y = PADDING;
   const dateH = 17;
-  const coverSize = hasCover ? BODY_WIDTH : 0;
   const bodyH = bodyLines.length * BODY_LINE;
   const footH = 12 + (data.idea ? 17 : 0) + 17;
-  const contentH = y + dateH + (hasCover ? 12 + coverSize : 0) + (bodyLines.length ? 14 + bodyH : 0) + 18 + footH + PADDING;
+  const contentH = y + dateH + (hasCover ? 12 + coverH : 0) + (bodyLines.length ? 14 + bodyH : 0) + 18 + footH + PADDING;
 
   canvas.width = CARD_WIDTH * scale;
   canvas.height = contentH * scale;
@@ -94,26 +104,21 @@ export async function renderRecordCard(canvas: HTMLCanvasElement, data: CardData
   ctx.fillText(`${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`, PADDING, y);
   y += dateH;
 
-  // 封面:1:1 居中裁切 + 圆角
+  // 封面:原比例完整绘制(#16 不裁切)+ 圆角
   if (hasCover) {
     y += 12;
-    const cover = await loadCover(data);
     if (cover) {
-      const source = cover as ImageBitmap;
-      const side = Math.min(source.width, source.height);
-      const sx = (source.width - side) / 2;
-      const sy = (source.height - side) / 2;
       ctx.save();
-      roundRect(ctx, PADDING, y, coverSize, coverSize, 14);
+      roundRect(ctx, PADDING, y, BODY_WIDTH, coverH, 14);
       ctx.clip();
-      ctx.drawImage(cover as CanvasImageSource, sx, sy, side, side, PADDING, y, coverSize, coverSize);
+      ctx.drawImage(cover as CanvasImageSource, PADDING, y, BODY_WIDTH, coverH);
       ctx.restore();
     } else {
       ctx.fillStyle = '#f1ece7';
-      roundRect(ctx, PADDING, y, coverSize, coverSize, 14);
+      roundRect(ctx, PADDING, y, BODY_WIDTH, coverH, 14);
       ctx.fill();
     }
-    y += coverSize;
+    y += coverH;
   }
 
   // 正文:整理版 || 原话,一字不改

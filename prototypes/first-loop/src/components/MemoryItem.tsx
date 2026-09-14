@@ -8,10 +8,11 @@ interface MemoryItemProps {
   record: MemoryRecord;
   onEdit: (record: MemoryRecord) => void;
   onExport: (record: MemoryRecord) => void;
+  onView: (urls: string[], index: number) => void;
 }
 
 /** Blob 加载或解码失败不静默:占位块明示「图片加载失败」,其余图片不受影响 */
-export default function MemoryItem({ record, onEdit, onExport }: MemoryItemProps) {
+export default function MemoryItem({ record, onEdit, onExport, onView }: MemoryItemProps) {
   const urls = useImageUrls(record.images);
   const withImage = record.images.length > 0;
   const [failed, setFailed] = useState<number[]>([]);
@@ -23,7 +24,7 @@ export default function MemoryItem({ record, onEdit, onExport }: MemoryItemProps
       <div className="memory-images">
         {urls.map((url, index) => failed.includes(index)
           ? <div key={index} className="memory-image-failed"><ImageBroken size={20} /><span>图片加载失败</span></div>
-          : <img key={index} src={url} alt="" loading="lazy" onError={() => markFailed(index)} />)}
+          : <img key={index} src={url} alt="" loading="lazy" onClick={(event) => { event.stopPropagation(); onView(urls, index); }} onError={() => markFailed(index)} />)}
       </div>
     )}
     <p>{record.text}</p>
