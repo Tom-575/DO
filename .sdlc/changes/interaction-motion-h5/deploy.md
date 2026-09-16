@@ -1,6 +1,6 @@
 # Deploy: 手感与导航 —— 横滑切页 + 全站交互动效重做 + Tab 栏与外观页改形
 
-status: active
+status: accepted
 candidate_revision: 未提交的工作树（HEAD = 7f83f75）
 source_evidence: test.md
 release_owner: tom57
@@ -56,13 +56,15 @@ updated_at: 2026-09-16
 
 ## Approval
 
-- approved_by:
-- approved_at:
+- approved_by: tom57
+- approved_at: 2026-09-16
 
 ## Deployment result
 
-**未部署。** 本文件是有意保留的空槽：本 change 的候选版本连提交都还没有，任何"部署成功"的写法都会是伪造。
+**Actions run 19（id 35110320273）success**，commit `dee2de2`，2026-09-16。
+线上 `https://tom-575.github.io/DO/` 返回 200，资源哈希与本地构建一致（`index-DMCuKsGK.js` / `index-DPPp9MKu.css`），确认部署的是本 change 的代码。
 
 ## Post-deploy checks
 
-未执行。
+- [x] 线上冷启动冒烟（agent-browser 430×932）：分页器 / 两页 / 吸附 / `inert` / Tab 栏无边线全过，`errors` 为空 —— 证据 `../evidence/interaction-motion-h5/20-production-cold.png`
+- [ ] 真机走查（iOS Safari / 安卓 Chrome）—— 附带未决项；如有问题开新 change

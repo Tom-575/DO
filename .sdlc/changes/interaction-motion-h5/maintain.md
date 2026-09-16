@@ -1,6 +1,6 @@
 # Maintain: interaction-motion-h5 期间的流程与工具缺陷
 
-status: draft
+status: active
 source: 2026-09-16 会话审计 + 两轴 code review
 issue:
 pr:
