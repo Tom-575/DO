@@ -37,3 +37,8 @@
   height: 1px;
   background: var(--separator);
 }
+
+/* 展开/收起的高度动画层:内层裁剪,行不会在动画中溢出 */
+.earlier-dos-body {
+  overflow: hidden;
+}

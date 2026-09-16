@@ -3,3 +3,4 @@ dist/
 Tools/
 __pycache__/
 .pytest_cache/
+*.log

@@ -22,16 +22,17 @@ import type {
 
 export type Tab = 'today' | 'memories';
 
-export type Screen = 'home' | 'input' | 'action' | 'record';
+export type Screen = 'home' | 'input' | 'action' | 'record' | 'appearance';
 
 export interface UIState {
   tab: Tab;
   screen: Screen;
+  /** 没有来源控件可依附的页面靠它决定从哪一侧进来:前进从右、后退从左 */
+  navDirection: 'forward' | 'back';
   idea: string;
   /** 正在行动的 DO(id);从「上一条 DO」进入行动页时指向既有 DO,新输入为 null */
   activeDOId: string | null;
   historyOpen: boolean;
-  appearanceOpen: boolean;
   /** 正在编辑的记录(id);从回忆页进入编辑态时指向该记录,新建为 null */
   activeRecordId: string | null;
   /** AI 对话规划(#15)产出的行动;行动页优先采用,采用后由行动页清空 */
@@ -61,8 +62,7 @@ export type AppAction =
   | { type: 'importData'; dos: DO[]; records: MemoryRecord[] }
   | { type: 'setTab'; tab: Tab }
   | { type: 'goHome' }
-  | { type: 'setScreen'; screen: Screen }
+  | { type: 'setScreen'; screen: Screen; direction?: 'forward' | 'back' }
   | { type: 'setIdea'; idea: string }
   | { type: 'setActiveDO'; id: string | null }
-  | { type: 'toggleHistory' }
-  | { type: 'setAppearanceOpen'; open: boolean };
+  | { type: 'toggleHistory' };

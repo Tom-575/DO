@@ -4,6 +4,8 @@ import { ArrowLeft } from '@phosphor-icons/react';
 import { PENDING_RECYCLE_MS, useAppState, useDispatch } from '../store/store';
 import { generateAction } from '../lib/ai';
 import { getAction } from '../lib/mock';
+import { useExpandTransition } from '../lib/use-expand-transition';
+import { SPRING_IN, popIn, riseIn } from '../lib/motion';
 import type { DOAction, DOIntent, DOStatus } from '../types';
 import NavBar from '../components/NavBar';
 import './action.css';
@@ -44,11 +46,15 @@ export default function ActionPage() {
     }
     runGenerate(idea);
   }, [idea]); // settings 在页面生命周期内视为不变,不纳入依赖
-  const leave = () => {
+  /** 真正离开:清掉临时状态回首页(收起动画播完后由 hook 调用) */
+  const finalizeLeave = () => {
     dispatch({ type: 'setIdea', idea: '' });
     dispatch({ type: 'setActiveDO', id: null });
     dispatch({ type: 'goHome' });
   };
+  // 从「最近的 DO」某一行点进来时,行动页从那一行铺满整屏,离开时再收回那一行
+  const expand = useExpandTransition(finalizeLeave);
+  const leave = expand.leave;
   /**
    * 三选落库语义:马上做→待记录(愿意去做);等等→待定(暂不决定),刷新停放时间,24h 回收重新计起;
    * 不想做了→放弃,parkedAt 回拨 24 小时以上,让回收规则自然把它收进展开区末尾。
@@ -68,23 +74,31 @@ export default function ActionPage() {
   const park = () => commit({ intent: '暂不决定', status: '待定', parkedAt: Date.now() });
   const giveUp = () => commit({ intent: '不想做了', status: '待定', parkedAt: Date.now() - PENDING_RECYCLE_MS - 60_000 });
   const actionsDisabled = !idea.trim() || generating || !action;
-  return <motion.section className="page action-page" initial={{ x: '18%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 34 }}>
-    <NavBar left={<button className="icon-action" onClick={() => dispatch({ type: 'setScreen', screen: 'input' })} aria-label="返回"><ArrowLeft size={23} /></button>} title="现在的一步" right={<span className="nav-spacer" />} />
+  // 从列表行点进来 → 从那一行铺满整屏;从输入页推进来(无来源控件)→ 整页进入
+  return <motion.section
+    className={`page action-page${expand.className}`}
+    style={expand.clipPath ? { clipPath: expand.clipPath } : undefined}
+    initial={expand.animated ? false : { x: '30%', opacity: 0 }}
+    animate={{ x: 0, opacity: 1 }}
+    transition={expand.animated || reduceMotion ? { duration: 0 } : SPRING_IN}
+  >
+    <NavBar left={<button className="icon-action" onClick={() => dispatch({ type: 'setScreen', screen: 'input', direction: 'back' })} aria-label="返回"><ArrowLeft size={23} /></button>} title="现在的一步" right={<span className="nav-spacer" />} />
     <div className="action-content">
-      <p className="source-idea">{idea}</p>
+      <motion.p className="source-idea" {...riseIn(reduceMotion, 0, 20)}>{idea}</motion.p>
+      {/* 行动生成完成时占位标题换成真内容:新内容自己弹入落位,不做退场依赖 */}
       {action ? (
-        <>
+        <motion.div key="ready" {...popIn(reduceMotion, .08, 30, 0.88)}>
           <h1>{action.title}</h1>
-          <div className="action-meta"><span>{action.time}</span><span>{action.stop}</span></div>
-        </>
+          <motion.div className="action-meta" {...riseIn(reduceMotion, .2, 24)}><span>{action.time}</span><span>{action.stop}</span></motion.div>
+        </motion.div>
       ) : (
-        <h1 className="action-pending">想一下…</h1>
+        <h1 className="action-pending thinking-pulse" key="pending">想一下…</h1>
       )}
     </div>
-    <div className="bottom-actions">
+    <motion.div className="bottom-actions" {...riseIn(reduceMotion, .28, 34)}>
       <button className="primary-action" disabled={actionsDisabled} onClick={begin}>马上做</button>
       <button className="secondary-action" disabled={actionsDisabled} onClick={park}>等等</button>
       <button className="quiet-action" disabled={actionsDisabled} onClick={giveUp}>不想做了</button>
-    </div>
+    </motion.div>
   </motion.section>;
 }

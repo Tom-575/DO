@@ -12,6 +12,8 @@
   gap: 14px;
   padding: 20px;
   background: rgba(24, 18, 14, 0.62);
+  /* 进入即淡入;关闭不做退场(CSS 动画与确定性退场约束一致) */
+  animation: fade-in 0.2s ease;
 }
 
 .card-panel {
@@ -22,6 +24,33 @@
   width: 100%;
   max-height: 100%;
   overflow-y: auto;
+  animation: card-rise 0.44s cubic-bezier(0.16, 1.22, 0.3, 1);
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-overlay,
+  .card-panel {
+    animation: none;
+  }
+}
+
+.card-actions button {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.card-actions button:active {
+  transform: scale(0.94);
 }
 
 /* ---------- 卡片本体:canvas 预览即导出物 ---------- */

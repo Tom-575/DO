@@ -53,7 +53,17 @@ textarea {
   background-size: cover;
   background-position: center;
 }
-.phone-app.has-background .page {
+/* iOS 不显示常驻滚动条:框架内所有滚动容器统一隐藏(原先散落在 .app-scroll / .tab-pager /
+   .plan-stream / .viewer-track 各处,新加的滚动容器总会漏掉一个) */
+.phone-app,
+.phone-app * {
+  scrollbar-width: none;
+}
+.phone-app *::-webkit-scrollbar {
+  display: none;
+}
+/* 磨砂照片只给首页:push 屏底下垫着常驻的首页,半透明 + blur 透出来会是首页的鬼影 */
+.phone-app.has-background .main-page {
   background: color-mix(in srgb, var(--bg) 34%, transparent);
   backdrop-filter: blur(6px) saturate(110%);
 }
@@ -76,16 +86,73 @@ textarea {
   flex-direction: column;
   overflow: hidden;
   padding: env(safe-area-inset-top, 0) 0 0;
+  /* 自建层叠上下文:内部的卡片(30)/查看器(40) 不会浮到 push 屏之上 */
+  z-index: 0;
+  /* 兜底:有些路径不播收回动画(如保存后直接切回首页),背景也要有个短过渡 */
+  transition: filter .24s ease, transform .24s ease;
 }
+/* 背景退后:有 push 屏盖上来时首页失焦并轻微前移。
+   放大 1.04 是必需的——全幅 blur 在四边采不到内容会淡出一圈,放大正好把虚边推出框外。 */
+.main-page.receded {
+  filter: blur(12px);
+  transform: scale(1.04);
+  transition:
+    filter .42s cubic-bezier(.2, .9, .24, 1),
+    transform .42s cubic-bezier(.2, .9, .24, 1);
+}
+/* 前景在收回(.bloom-out)时背景跟着对焦回来。用 :has 让背景直接感知前景的动画阶段,
+   省掉「把动画阶段同步进 store」这条路,新加 push 屏也不会漏。 */
+.phone-app:has(.bloom-out) .main-page.receded {
+  filter: none;
+  transform: none;
+  transition-duration: .34s;
+}
+/* push 屏统一盖在首页之上;首页因此可以一直挂在下面 */
+.push-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* 容器变换:裁切值由 lib/use-expand-transition.ts 内联给出,这里只负责过渡曲线 */
+.bloom-in,
+.bloom-out {
+  will-change: clip-path;
+}
+.bloom-in {
+  transition: clip-path .42s cubic-bezier(.2, .9, .24, 1);
+}
+.bloom-out {
+  transition: clip-path .34s cubic-bezier(.55, .04, .78, .3);
+  pointer-events: none;
+}
+
 .app-scroll {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: none;
 }
-.app-scroll::-webkit-scrollbar {
-  display: none;
+/* 今天 / 回忆的横滑分页:一页一张,原生 scroll-snap 承担手势与吸附,
+   每页一份 .app-scroll,各自记住纵向滚动位置。 */
+.tab-pager {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* 到头不再把横滑手势交给浏览器前进/后退 */
+  overscroll-behavior-x: contain;
+}
+.tab-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+  /* 一次手势只翻一页,不会一甩跨过中间页 */
+  scroll-snap-stop: always;
 }
 .large-header {
   display: flex;
@@ -148,12 +215,10 @@ textarea {
   color: var(--accent-text);
   text-align: left;
   box-shadow: 0 7px 18px rgba(255, 107, 53, 0.24);
-  transition:
-    transform 0.15s,
-    background 0.15s;
+  /* 缩放交给 motion 的 whileTap / whileHover,这里只管底色 */
+  transition: background 0.15s;
 }
 .do-button:active {
-  transform: scale(0.985);
   background: var(--accent-pressed);
 }
 .do-button > span {
@@ -218,6 +283,17 @@ textarea {
   background: var(--surface);
   color: var(--text);
   text-align: left;
+  transition: background .18s ease, transform .18s ease;
+}
+/* 列表行按下给一次 iOS 式的高亮;缩放由 motion 的 whileTap 负责(内联 transform 会盖住 CSS) */
+.previous-row:active {
+  background: var(--surface-2);
+}
+.previous-row svg {
+  transition: transform .18s ease;
+}
+.previous-row:active svg {
+  transform: translateX(3px);
 }
 .previous-row span {
   max-width: 86%;
@@ -241,28 +317,31 @@ textarea {
   height: 1px;
   background: var(--separator);
 }
+/* 底部 Tab 栏:无分隔线、无独立底色,与页面同处一层背景——视觉上看不出是一条栏,功能照旧 */
 .tab-bar {
-  flex: 0 0 76px;
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  height: 76px;
-  padding: 8px 56px max(9px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--separator);
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  backdrop-filter: blur(22px) saturate(180%);
+  min-height: 60px;
+  padding: 6px 56px max(6px, env(safe-area-inset-bottom));
+  background: none;
 }
 .tab-bar button {
+  /* 左右两个按钮撑满各自 1fr 的格子:点击区域比图标大得多,指示点也能按格子居中 */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 44px;
   border: 0;
   background: none;
   color: var(--tertiary);
+  transition: color .2s ease, opacity .2s ease;
 }
 .tab-bar button.tab-create {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--accent-text);
@@ -271,8 +350,22 @@ textarea {
 .tab-bar button.selected {
   color: var(--accent);
 }
-.tab-bar button { transition: transform .2s ease, color .2s ease; }
-.tab-bar button:active { transform: scale(.9); }
+/* 按下只用透明度:按钮被 transform 缩放会带偏指示点的测量位置 */
+.tab-bar button:active { opacity: .5; }
+/* 选中态:图标放大 + 填充,比单纯换色更容易一眼看到当前在哪一页 */
+.tab-bar button svg { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+.tab-bar button.selected svg { transform: scale(1.14); }
+/* 滑动指示点:两个 Tab 共用 layoutId,切换时在按钮之间平移 */
+.tab-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 16px;
+  height: 3px;
+  margin-left: -8px;
+  border-radius: 999px;
+  background: var(--accent);
+}
 .nav-bar {
   position: sticky;
   z-index: 2;
@@ -291,19 +384,13 @@ textarea {
   font-weight: 600;
   text-align: center;
 }
-.nav-action {
-  display: flex;
-  align-items: center;
-  padding: 8px 0;
-  text-align: left;
-  font-size: 16px;
+/* 导航栏按钮(返回 / 取消 / 确认)按下给一次可见反馈 */
+.nav-bar button {
+  transition: opacity .18s ease, transform .18s ease;
 }
-.nav-action.strong {
-  justify-self: end;
-  font-weight: 600;
-}
-.nav-action:disabled {
-  color: var(--tertiary);
+.nav-bar button:active {
+  opacity: .5;
+  transform: scale(.86);
 }
 .nav-spacer {
   width: 32px;
@@ -311,6 +398,10 @@ textarea {
 .icon-action {
   justify-self: start;
   padding: 8px;
+}
+/* 右侧的图标按钮(与左侧返回箭头对称) */
+.icon-action-end {
+  justify-self: end;
 }
 .input-page {
   overflow: hidden;
@@ -403,7 +494,11 @@ textarea {
   border-radius: 14px;
   font-size: 17px;
   font-weight: 600;
+  transition: background .2s ease, color .2s ease, transform .15s ease, opacity .2s ease;
 }
+/* 从「生成中不可点」到可点,按钮自己渐变过去,不再是一下子跳变 */
+.primary-action:not(:disabled):active { transform: scale(.96); }
+.primary-action:disabled { opacity: .92; }
 .primary-action {
   background: var(--accent);
   color: var(--accent-text);
@@ -414,6 +509,7 @@ textarea {
   color: var(--accent);
   font-weight: 500;
 }
+.secondary-action:not(:disabled):active { transform: scale(.96); }
 .memory-stream {
   padding: 10px 16px 30px;
 }
@@ -457,12 +553,28 @@ textarea {
 .memories-header {
   padding-bottom: 18px;
 }
-.appearance-scrim { position:absolute; z-index:5; inset:0; display:flex; align-items:flex-end; background:rgba(0,0,0,.28); animation:fade-in .2s ease; }
-.appearance-sheet { width:100%; padding:22px 18px max(22px,env(safe-area-inset-bottom)); border-radius:24px 24px 0 0; background:var(--surface); box-shadow:0 -12px 40px rgba(0,0,0,.18); animation:sheet-up .28s cubic-bezier(.2,.8,.2,1); }
-.sheet-heading { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; }
-.sheet-heading span,.group-label { color:var(--secondary); font-size:13px; }
-.sheet-heading h2 { margin:4px 0 0; font-size:22px; letter-spacing:-.03em; }
-.sheet-heading button { display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:50%; background:var(--surface-2); color:var(--secondary); }
+/* 外观页:一整屏,裁切起点由 lib/use-expand-transition.ts 内联给出,这里只管版式 */
+.appearance-page {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.appearance-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 20px 34px;
+}
+.appearance-lead {
+  margin: 0 2px 24px;
+  color: var(--secondary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.group-label { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--secondary); font-size:13px; }
+/* 分组标:这一组不参与草稿,点下去就写入,不随 ✕ 撤销(替代原来那句免责说明) */
+.group-tag { padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--tertiary); font-size:11px; font-style:normal; }
 .appearance-group + .appearance-group { margin-top:22px; }
 .choice-row,.background-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
 .choice-row button,.background-grid button,.background-upload { display:flex; align-items:center; justify-content:center; gap:7px; min-height:46px; border:1px solid var(--separator); border-radius:12px; background:var(--bg); color:var(--secondary); font-size:13px; }
@@ -473,8 +585,13 @@ textarea {
 .background-swatch { display:grid; place-items:center; width:34px; height:34px; border-radius:10px; border:1px solid var(--separator); }
 .background-swatch.plain { background:var(--bg); }.background-swatch.mist { background:linear-gradient(135deg,#d8e1e8,#f6f1ec); }.background-swatch.night { background:linear-gradient(135deg,#182334,#5d6b78); }.background-swatch.upload { background:var(--surface-2); color:var(--accent); }
 @keyframes fade-in { from { opacity:0; } to { opacity:1; } }
-@keyframes sheet-up { from { transform:translateY(100%); } to { transform:translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .appearance-scrim,.appearance-sheet { animation:none; } }
+/* 「想一下…」的呼吸:表达「正在处理」,不是装饰(行动页用) */
+@keyframes thinking-pulse { 0%,100% { opacity:.18; } 50% { opacity:1; } }
+.thinking-pulse { animation: thinking-pulse 1.4s ease-in-out infinite; }
+/* 图片落位:淡入 + 从 1.04 缩回,避免「啪」地贴上去 */
+.media-in { animation: media-in .4s cubic-bezier(.2,.8,.2,1); }
+@keyframes media-in { from { opacity:0; transform: scale(1.04); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .thinking-pulse,.media-in { animation:none; } .bloom-in,.bloom-out { transition:none; } }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #000;
@@ -500,7 +617,7 @@ textarea {
 .theme-light { --backdrop: rgba(242,242,247,.55); }
 .theme-dark { color-scheme: dark; --bg:#09090b; --surface:rgba(32,32,35,.88); --surface-2:rgba(52,52,56,.9); --text:#f5f5f7; --secondary:#c1c1c6; --tertiary:#a1a1a8; --separator:rgba(170,170,178,.28); --accent:#ff8058; --accent-pressed:#e86d47; --accent-text:#fff; --backdrop: rgba(5,5,7,.34); }
 .theme-light .phone-app,.theme-dark .phone-app { background-color:var(--bg); }
-.theme-dark .phone-app.has-background .page { background:rgba(5,5,7,.3); }
+.theme-dark .phone-app.has-background .main-page { background:rgba(5,5,7,.3); }
 .theme-dark .phone-app.has-background .large-header h1,
 .theme-dark .phone-app.has-background .do-intro h2 { text-shadow:0 2px 18px rgba(0,0,0,.78); }
 .theme-dark .do-button { box-shadow:0 10px 30px rgba(0,0,0,.28); }

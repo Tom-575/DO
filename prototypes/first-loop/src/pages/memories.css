@@ -49,8 +49,13 @@
   color: var(--secondary);
 }
 
+.memory-export {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
 .memory-export:active {
   opacity: 0.7;
+  transform: scale(0.92);
 }
 
 /* 图片加载失败占位(#13):与图片同比例的中性块 */
@@ -98,7 +103,7 @@
   display: flex;
   flex-direction: column;
   background: #000;
-  animation: fade-in 0.2s ease;
+  /* 开合动效交给 motion 的 initial/animate(ImageViewer 内),这里不再叠 CSS 动画 */
   /* 纵向触摸不穿透到背后的回忆流;横向滑动只在 track 上 */
   touch-action: none;
   overscroll-behavior: contain;
@@ -124,8 +129,37 @@
   color: #fff;
 }
 
+.viewer-action {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
 .viewer-action:active {
   opacity: 0.7;
+  transform: scale(0.86);
+}
+
+/* 查看器里的图:淡入 + 从 1.06 缩回,做出「推近后落下」的观感 */
+.viewer-slide img,
+.viewer-failed {
+  animation: viewer-zoom 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes viewer-zoom {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer-slide img,
+  .viewer-failed {
+    animation: none;
+  }
 }
 
 .viewer-count {
@@ -140,13 +174,8 @@
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none;
   /* 查看器内唯一可滚区域:只响应横向手势 */
   touch-action: pan-x;
-}
-
-.viewer-track::-webkit-scrollbar {
-  display: none;
 }
 
 .viewer-slide {

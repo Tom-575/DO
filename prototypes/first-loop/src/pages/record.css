@@ -146,6 +146,12 @@
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.record-image button:active {
+  transform: scale(0.84);
+  opacity: 0.8;
 }
 
 .record-add {
@@ -266,6 +272,13 @@
   border-radius: 50%;
   background: var(--surface-2);
   color: var(--secondary);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.record-link-current button:active,
+.record-link-heading button:active {
+  transform: scale(0.9);
+  opacity: 0.75;
 }
 
 .record-link-row {
@@ -282,6 +295,11 @@
   color: var(--text);
   text-align: left;
   font-size: 15px;
+  transition: background 0.18s ease;
+}
+
+.record-link-row:active {
+  background: var(--surface-2);
 }
 
 .record-link-row::before {

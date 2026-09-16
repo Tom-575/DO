@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowUp } from '@phosphor-icons/react';
 import { useAppState, useDispatch } from '../store/store';
 import { planAction } from '../lib/ai';
 import { planActionMock } from '../lib/mock';
+import { useExpandTransition } from '../lib/use-expand-transition';
+import { PRESS_SCALE, SPRING_IN, SPRING_TAP, popIn, slideIn, stagger } from '../lib/motion';
 import type { PlanReply, PlanTurn } from '../types';
 import NavBar from '../components/NavBar';
 import './input.css';
@@ -19,7 +21,7 @@ function grow(element: HTMLTextAreaElement): void {
  * 行动落定即进行动页。对话只活在本地 state;store 只在行动落定时收到原话与 plannedAction。
  */
 export default function InputPage() {
-  const { settings } = useAppState();
+  const { settings, navDirection } = useAppState();
   const dispatch = useDispatch();
   const reduceMotion = useReducedMotion();
   const [turns, setTurns] = useState<PlanTurn[]>([]);
@@ -31,10 +33,12 @@ export default function InputPage() {
   const runToken = useRef(0);
   const streamRef = useRef<HTMLDivElement>(null);
   const composeRef = useRef<HTMLTextAreaElement>(null);
+  // 新气泡/「想一下…」出现时滑到最新一条:平滑滚动,而不是瞬间跳到底
   useEffect(() => {
     const stream = streamRef.current;
-    if (stream) stream.scrollTop = stream.scrollHeight;
-  }, [turns, thinking]);
+    if (!stream) return;
+    stream.scrollTo({ top: stream.scrollHeight, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }, [turns, thinking, reduceMotion]);
 
   const applyReply = (reply: PlanReply, origin: string, token: number) => {
     if (runToken.current !== token) return;
@@ -68,7 +72,8 @@ export default function InputPage() {
       });
   };
 
-  const leave = () => {
+  /** 真正离开:收尾 dispatch(收回动画播完后由 hook 调用) */
+  const finalizeLeave = () => {
     // 返回即放弃整段对话:作废在途请求、清空念头,不留半成品
     runToken.current += 1;
     setTurns([]);
@@ -78,18 +83,31 @@ export default function InputPage() {
     dispatch({ type: 'setIdea', idea: '' });
     dispatch({ type: 'goHome' });
   };
+  const expand = useExpandTransition(finalizeLeave);
+  const leave = expand.leave;
 
-  return <motion.section className="page input-page" initial={{ x: '18%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 34 }}>
+  return <motion.section
+    className={`page input-page${expand.className}`}
+    style={expand.clipPath ? { clipPath: expand.clipPath } : undefined}
+    initial={expand.animated ? false : { x: navDirection === 'back' ? '-30%' : '30%', opacity: 0 }}
+    animate={{ x: 0, opacity: 1 }}
+    transition={expand.animated || reduceMotion ? { duration: 0 } : SPRING_IN}
+  >
     <NavBar left={<button className="icon-action" onClick={leave} aria-label="返回"><ArrowLeft size={23} /></button>} title="新的 DO" right={<span className="nav-spacer" />} />
     <div className="plan-stream" ref={streamRef}>
-      {turns.length === 0 && <p className="plan-hint">不用先想清楚目标或计划。</p>}
+      {turns.length === 0 && <motion.p className="plan-hint" {...popIn(reduceMotion)}>不用先想清楚目标或计划。</motion.p>}
+      {/* 气泡从各自的那一侧推入(用户从右、AI 从左),方向本身在传达「谁在说话」 */}
       {turns.map((turn, index) => turn.role === 'user'
-        ? <p className="plan-bubble mine" key={index}>{turn.text}</p>
-        : <div className="plan-turn" key={index}>
+        ? <motion.p className="plan-bubble mine" key={index} {...slideIn(reduceMotion, 1)}>{turn.text}</motion.p>
+        : <motion.div className="plan-turn" key={index} {...slideIn(reduceMotion, -1)}>
             <p className="plan-bubble">{turn.text}</p>
-            {index === turns.length - 1 && options.map((option) => <button className="plan-option" key={option} onClick={() => send(option)}>{option}</button>)}
-          </div>)}
-      {thinking && <p className="plan-bubble pending">想一下…</p>}
+            {index === turns.length - 1 && options.map((option, i) => <motion.button className="plan-option" key={option}
+              whileTap={reduceMotion ? undefined : { scale: PRESS_SCALE, transition: SPRING_TAP }}
+              {...popIn(reduceMotion, stagger(i + 1, .07), 22, 0.84)} onClick={() => send(option)}>{option}</motion.button>)}
+          </motion.div>)}
+      {thinking && <p className="plan-bubble pending thinking-dots" aria-label="想一下…">
+        <span /><span /><span />
+      </p>}
     </div>
     <div className="plan-compose">
       <textarea ref={composeRef} rows={1} value={draft} autoFocus placeholder="想到什么，就写什么" onChange={(event) => { setDraft(event.target.value); grow(event.target); }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(draft); } }} />

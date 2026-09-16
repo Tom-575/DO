@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
-import { UserCircle } from '@phosphor-icons/react';
+import { motion, useReducedMotion, type MotionValue } from 'motion/react';
 import { useAppState, useDispatch } from '../store/store';
+import { riseIn } from '../lib/motion';
+import AppearanceButton from '../components/AppearanceButton';
 import MemoryItem from '../components/MemoryItem';
 import ImageViewer from '../components/ImageViewer';
 import RecordCard from '../components/RecordCard';
@@ -14,9 +16,15 @@ interface Viewing {
   index: number;
 }
 
-export default function MemoriesPage() {
+interface MemoriesPageProps {
+  /** 大标题的横向惯性甩出(来自 App 的 useSwipeLag);静止时恒为 0,即原位 */
+  titleLag: MotionValue<number>;
+}
+
+export default function MemoriesPage({ titleLag }: MemoriesPageProps) {
   const { records, dos } = useAppState();
   const dispatch = useDispatch();
+  const reduceMotion = useReducedMotion();
   /* 卡片预览与导出(#14):预览即所见即所得,导出失败行内提示 */
   const [cardRecord, setCardRecord] = useState<MemoryRecord | null>(null);
   const [exportError, setExportError] = useState(false);
@@ -49,14 +57,21 @@ export default function MemoriesPage() {
   };
 
   return <>
-    <header className="large-header memories-header"><div><span>你的真实生活</span><h1>回忆</h1></div><button aria-label="外观设置" onClick={() => dispatch({ type: 'setAppearanceOpen', open: true })}><UserCircle size={32} weight="light" /></button></header>
+    {/* 顶栏:位移交给原生横滑,只有大标题跟着惯性甩一下,手停即回原位(见 TodayPage 的说明) */}
+    <header className="large-header memories-header">
+      <motion.div style={{ x: titleLag }}>
+        <span>你的真实生活</span>
+        <h1>回忆</h1>
+      </motion.div>
+      <AppearanceButton />
+    </header>
     <main className="memory-stream">
       {records.length === 0
-        ? <div className="memories-empty-state">
+        ? <motion.div className="memories-empty-state" {...riseIn(reduceMotion, .1, 30)}>
             <p className="memories-empty-title">还没有记录</p>
             <p className="memories-empty-hint">做过的事，回来写下就好。</p>
-          </div>
-        : records.map((record) => <MemoryItem key={record.id} record={record} onEdit={openEdit} onExport={setCardRecord} onView={(urls, index) => setViewing({ record, urls, index })} />)}
+          </motion.div>
+        : records.map((record, index) => <MemoryItem key={record.id} record={record} index={index} onEdit={openEdit} onExport={setCardRecord} onView={(urls, i) => setViewing({ record, urls, index: i })} />)}
     </main>
     {viewing && <ImageViewer
       urls={viewing.urls}

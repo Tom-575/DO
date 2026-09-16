@@ -5,6 +5,8 @@ import { useAppState, useDispatch } from '../store/store';
 import { refineRecord } from '../lib/ai';
 import { clearRecordDraft, loadRecordDraft, saveRecordDraft } from '../lib/storage';
 import { useImageUrls } from '../lib/image-urls';
+import { useExpandTransition } from '../lib/use-expand-transition';
+import { PRESS_SCALE, SPRING_IN, SPRING_TAP, popIn, riseIn, stagger } from '../lib/motion';
 import type { MemoryRecord, RecordImage } from '../types';
 import NavBar from '../components/NavBar';
 import './record.css';
@@ -168,35 +170,45 @@ export default function RecordPage() {
     dispatch({ type: 'setScreen', screen: 'home' });
   };
 
-  const leave = () => {
+  /** 真正离开:收尾 dispatch(容器的收回动画播完后由 hook 调用) */
+  const finalizeLeave = () => {
     if (editing) dispatch({ type: 'setActiveRecordId', id: null });
     dispatch({ type: 'goHome' });
   };
+  const expand = useExpandTransition(finalizeLeave);
+  const leave = expand.leave;
 
-  return <motion.section className="page record-page" initial={{ x: '18%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 34 }}>
+  return <motion.section
+    className={`page record-page${expand.className}`}
+    style={expand.clipPath ? { clipPath: expand.clipPath } : undefined}
+    initial={expand.animated ? false : { x: '30%', opacity: 0 }}
+    animate={{ x: 0, opacity: 1 }}
+    transition={expand.animated || reduceMotion ? { duration: 0 } : SPRING_IN}
+  >
     <NavBar left={<button className="icon-action" onClick={leave} aria-label="返回"><ArrowLeft size={23} /></button>} title={editing ? '编辑记录' : '新的记录'} right={<span className="nav-spacer" />} />
     <div className="record-content">
-      {draftHint && <p className="record-draft-hint">已恢复上次未保存的草稿</p>}
+      {draftHint && <motion.p className="record-draft-hint" {...popIn(reduceMotion)}>已恢复上次未保存的草稿</motion.p>}
       <textarea className="record-text" aria-label="记录内容" value={text} onChange={(event) => { setText(event.target.value); grow(event.target); }} placeholder="做了什么，就写什么" />
       <button className="record-refine" disabled={!text.trim() || refining} onClick={() => void refine()}>{refining ? '整理中…' : '帮我整理'}</button>
-      {refineFailed && <p className="record-refine-error">整理没成功，稍后再试。</p>}
-      {hasRefined && <section className="record-refined">
+      {refineFailed && <motion.p className="record-refine-error" {...popIn(reduceMotion)}>整理没成功，稍后再试。</motion.p>}
+      {/* 整理版生成后整块弹上来,让「多出来一版」这件事被看见 */}
+      {hasRefined && <motion.section className="record-refined" {...popIn(reduceMotion, 0, 30, 0.9)}>
         <h2>整理版</h2>
         <textarea aria-label="整理版" value={refined} onChange={(event) => { setRefined(event.target.value); grow(event.target); }} />
         <p>可以直接改，原话仍会保留。</p>
-      </section>}
+      </motion.section>}
       <div className="record-images">
-        {previews.map((url, index) => <div className="record-image" key={url}>
-          <img src={url} alt="" />
+        {previews.map((url, index) => <motion.div className="record-image" key={url} {...popIn(reduceMotion, stagger(index, .06), 24, 0.7)}>
+          <img className="media-in" src={url} alt="" />
           <button aria-label={`移除第 ${index + 1} 张图片`} onClick={() => setImages((current) => current.filter((_, i) => i !== index))}><X size={12} weight="bold" /></button>
-        </div>)}
-        {images.length < MAX_IMAGES && <label className="record-add">
+        </motion.div>)}
+        {images.length < MAX_IMAGES && <motion.label className="record-add" {...popIn(reduceMotion, stagger(previews.length, .06), 24, 0.7)}>
           <input type="file" multiple accept="image/*" onChange={(event) => { addImages(event.target.files); event.target.value = ''; }} />
           <Plus size={20} weight="light" />
           <span>{images.length}/{MAX_IMAGES}</span>
-        </label>}
+        </motion.label>}
       </div>
-      {linkCandidates.length > 0 && <section className="record-link">
+      {linkCandidates.length > 0 && <motion.section className="record-link" {...riseIn(reduceMotion, .12, 30)}>
         <div className="record-link-heading">
           <span>关联 DO</span>
           <button onClick={() => setPickerOpen((open) => !open)} aria-label={pickerOpen ? '收起 DO 列表' : '展开 DO 列表'} aria-expanded={pickerOpen}><CaretDown className={pickerOpen ? 'rotated' : ''} size={16} weight="bold" /></button>
@@ -211,15 +223,17 @@ export default function RecordPage() {
                 </>
               : <span className="empty">不关联</span>}
           </div>
-          {pickerOpen && linkCandidates.map((item) => <button key={item.id} className="record-link-row" onClick={() => (item.id === linkedId ? unlink() : setLinkedId(item.id))}>
+          {pickerOpen && linkCandidates.map((item, index) => <motion.button key={item.id} className="record-link-row"
+            whileTap={reduceMotion ? undefined : { scale: PRESS_SCALE, transition: SPRING_TAP }}
+            {...popIn(reduceMotion, stagger(index, .06, 5), 20, 0.86)} onClick={() => (item.id === linkedId ? unlink() : setLinkedId(item.id))}>
             <span>{item.thought}</span>
             {item.id === linkedId && <Check size={16} weight="bold" />}
-          </button>)}
+          </motion.button>)}
         </div>
-      </section>}
+      </motion.section>}
     </div>
-    <div className="bottom-actions">
+    <motion.div className="bottom-actions" {...riseIn(reduceMotion, .12, 30)}>
       <button className="primary-action" disabled={!canSave} onClick={save}>{editing ? '保存修改' : '保存'}</button>
-    </div>
+    </motion.div>
   </motion.section>;
 }

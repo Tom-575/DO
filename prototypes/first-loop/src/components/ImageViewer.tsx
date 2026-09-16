@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { ImageBroken, PencilSimple, X } from '@phosphor-icons/react';
+import { SPRING_BOUNCE } from '../lib/motion';
+import { useExpandTransition } from '../lib/use-expand-transition';
 
 /**
  * 全屏图片查看器(#17,小红书式):黑底、scroll-snap 左右滑动切换、页码指示。
@@ -17,6 +19,8 @@ interface ImageViewerProps {
 
 export default function ImageViewer({ urls, initialIndex, onClose, onEdit }: ImageViewerProps) {
   const reduceMotion = useReducedMotion();
+  // 查看器从被点的那张缩略图扩开、关闭时收回它(原点由 MemoryItem 在点图时量下)
+  const bloom = useExpandTransition(onClose);
   const [index, setIndex] = useState(initialIndex);
   const [failed, setFailed] = useState<number[]>([]);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -55,12 +59,22 @@ export default function ImageViewer({ urls, initialIndex, onClose, onEdit }: Ima
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  return <div className="viewer-overlay" role="dialog" aria-label="查看图片" onClick={onClose}>
-    <div className="viewer-bar" onClick={(event) => event.stopPropagation()}>
-      <button className="viewer-action" aria-label="关闭" onClick={onClose}><X size={22} /></button>
+  return <motion.div
+    className={`viewer-overlay${bloom.className}`}
+    style={bloom.clipPath ? { clipPath: bloom.clipPath } : undefined}
+    role="dialog"
+    aria-label="查看图片"
+    onClick={bloom.leave}
+    initial={bloom.animated ? false : { opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: bloom.animated || reduceMotion ? 0 : .2 }}
+  >
+    <motion.div className="viewer-bar" onClick={(event) => event.stopPropagation()}
+      initial={{ opacity: 0, y: -26 }} animate={{ opacity: 1, y: 0 }} transition={reduceMotion ? { duration: 0 } : SPRING_BOUNCE}>
+      <button className="viewer-action" aria-label="关闭" onClick={bloom.leave}><X size={22} /></button>
       <span className="viewer-count">{index + 1} / {urls.length}</span>
       <button className="viewer-action" aria-label="编辑记录" onClick={onEdit}><PencilSimple size={22} /></button>
-    </div>
+    </motion.div>
     <div className="viewer-track" ref={trackRef} onScroll={handleScroll} onWheel={(event) => {
       const track = trackRef.current;
       if (track && Math.abs(event.deltaY) > Math.abs(event.deltaX)) track.scrollLeft += event.deltaY;
@@ -69,5 +83,5 @@ export default function ImageViewer({ urls, initialIndex, onClose, onEdit }: Ima
         ? <div key={i} className="viewer-slide"><div className="viewer-failed"><ImageBroken size={22} /><span>图片加载失败</span></div></div>
         : <div key={i} className="viewer-slide"><img src={url} alt="" draggable={false} onError={() => markFailed(i)} /></div>)}
     </div>
-  </div>;
+  </motion.div>;
 }

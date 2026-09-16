@@ -14,15 +14,10 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 20px 16px 12px;
-}
-
-.plan-stream::-webkit-scrollbar {
-  display: none;
 }
 
 .plan-hint {
@@ -71,6 +66,32 @@
   color: var(--tertiary);
 }
 
+/* 「想一下…」用三个跳动点代替静止文字:等待状态自己会动,比文字更早被发现 */
+.plan-bubble.thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 42px;
+}
+.thinking-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tertiary);
+  animation: dot-hop 1.05s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: .14s; }
+.thinking-dots span:nth-child(3) { animation-delay: .28s; }
+
+@keyframes dot-hop {
+  0%, 100% { transform: translateY(0); opacity: .35; }
+  38% { transform: translateY(-5px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-dots span { animation: none; opacity: .6; }
+}
+
 /* 提问下的快捷回答:点选即发送, tap 目标不小于 32px 高 */
 .plan-option {
   padding: 7px 13px;
@@ -83,8 +104,8 @@
   transition: transform 0.15s, opacity 0.15s;
 }
 
+/* 缩放由 motion 的 whileTap 负责(内联 transform 会盖住 CSS) */
 .plan-option:active {
-  transform: scale(0.97);
   opacity: 0.7;
 }
 

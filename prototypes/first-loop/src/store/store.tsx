@@ -35,10 +35,10 @@ const initialState: StoreState = {
   settings: loadSettings(),
   tab: 'today',
   screen: 'home',
+  navDirection: 'forward',
   idea: '',
   activeDOId: null,
   historyOpen: false,
-  appearanceOpen: false,
   activeRecordId: null,
   plannedAction: null,
 };
@@ -117,17 +117,16 @@ function reducer(state: StoreState, action: AppAction): StoreState {
     case 'setTab':
       return { ...state, tab: action.tab };
     case 'goHome':
-      return { ...state, screen: 'home', tab: 'today' };
+      // 只回首页、不动 tab:首页常驻在 push 屏底下,掰回「今天」会让收回动画露出的下一屏跳页
+      return { ...state, screen: 'home' };
     case 'setScreen':
-      return { ...state, screen: action.screen };
+      return { ...state, screen: action.screen, navDirection: action.direction ?? 'forward' };
     case 'setIdea':
       return { ...state, idea: action.idea };
     case 'setActiveDO':
       return { ...state, activeDOId: action.id };
     case 'toggleHistory':
       return { ...state, historyOpen: !state.historyOpen };
-    case 'setAppearanceOpen':
-      return { ...state, appearanceOpen: action.open };
     default:
       return state;
   }
