@@ -1,0 +1,28 @@
+---
+description: 任何代码或产品变更开始前必须先走 SDLC 流程；收工前必须留下 .sdlc 变更工件
+alwaysApply: true
+enabled: true
+updatedAt: 2026-09-16T00:00:00.000Z
+---
+
+# 流程门禁（SDLC）
+
+本项目用 `.sdlc/` 走 **Plan → Design → Build → Test → Deploy → Maintain** 六阶段。这是一道**门禁**，不是参考资料。
+
+## 开工前（缺一不可）
+
+1. 读 `.sdlc/INDEX.md` 与 `.sdlc/lifecycle.yaml`，确认已到达的 gate 与活跃 change。
+2. 读 `.zcode/skills/ai-sdlc-navigator/SKILL.md`，**手动按其步骤执行**——本运行时不自动加载 `.zcode/skills/`。`.codebuddy/skills/` 下有两个薄封装可直接调用：`ai-sdlc-navigator`、`code-review`。
+3. 在 `docs/TODO.md` 认领任务编号，不要凭印象开工。
+
+## 收工前
+
+- `.sdlc/changes/<change-id>/` 必须存在，且**当前阶段该有的工件非空**：验收表有行、证据链接有目标。
+- 没有工件 = 这次变更**没完成**。不允许以「下次补」收尾。
+- 提交信息带 change 名。
+
+## 豁免
+
+确有理由豁免时，在 `docs/TODO.md` 对应任务下写明**豁免理由 + 补录去向**。**指向尚未落地的东西不算去向**（事故复发记录见 TODO #20）。
+
+> 本段同文出现在 `AGENTS.md` 与 `CODEBUDDY.md`。改一处必须同步三处——用门禁首句「流程门禁（SDLC）」grep 即可校验。
