@@ -3,22 +3,23 @@ import { motion, useReducedMotion } from 'motion/react';
 import { useAppState, useDispatch } from './store/store';
 import type { Tab } from './store/types';
 import TodayPage from './pages/TodayPage';
-import MemoriesPage from './pages/MemoriesPage';
+import TracesPage from './pages/TracesPage';
 import InputPage from './pages/InputPage';
 import ActionPage from './pages/ActionPage';
 import RecordPage from './pages/RecordPage';
+import StartPage from './pages/StartPage';
 import TabBar from './components/TabBar';
 import AppearancePanel from './components/AppearancePanel';
 import { useSwipeLag } from './lib/use-swipe-lag';
 
-/** 外观页的内置背景值;渐变取色与 styles.css 的 .background-swatch 保持一致 */
+/** 「我的」里的内置背景值;渐变取色与 components/appearance.css 的 .background-swatch 保持一致（CSS 读不到这里的常量，改一处要同步另一处） */
 const BUILTIN_BACKGROUNDS: Record<'mist' | 'night', string> = {
-  mist: 'linear-gradient(135deg, #d8e1e8, #f6f1ec)',
-  night: 'linear-gradient(135deg, #182334, #5d6b78)',
+  mist: 'linear-gradient(135deg, #e2dcd4, #faf7f3)',
+  night: 'linear-gradient(135deg, #1b1a18, #4d4740)',
 };
 
-/** 底部两个 Tab 的分页顺序,与 .tab-pager 里的 slide 顺序一致 */
-const TABS: Tab[] = ['today', 'memories'];
+/** 底部两个分页 Tab 的顺序,与 .tab-pager 里的 slide 顺序一致 */
+const TABS: Tab[] = ['today', 'traces'];
 
 /** 点 Tab 的程序化滚动期间忽略落点判定的时长:这段滚动会掠过对侧页,跟着判定会把用户按回去 */
 const PROGRAMMATIC_GUARD_MS = 600;
@@ -50,7 +51,7 @@ export default function App() {
       ? {}
       : { backgroundImage: builtinBackground ?? `linear-gradient(var(--backdrop),var(--backdrop)),url(${background})` };
 
-  // tab 状态 → 分页位置:点 Tab、保存记录后跳回忆页都走这里;首次挂载直接落位,不闪一下
+  // tab 状态 → 分页位置:点 Tab、保存记录后跳痕迹页都走这里;首次挂载直接落位,不闪一下
   useEffect(() => {
     const pager = pagerRef.current;
     if (!pager) return;
@@ -81,7 +82,7 @@ export default function App() {
   }, [tabIndex, resetSwipe]);
 
   /**
-   * 滑动 → tab 状态:越过中点立刻翻,让指示点在手指松开前就跟着走(等停稳再翻手感是断的)。
+   * 滑动 → tab 状态:越过中点立刻翻,让指示胶囊在手指松开前就跟着走(等停稳再翻手感是断的)。
    * 程序化滚动期间走守卫窗口,用户一按下接管手势守卫即失效。
    */
   const syncTabFromScroll = () => {
@@ -102,39 +103,42 @@ export default function App() {
 
   return <div className={`prototype-frame theme-${theme}`}>
     <div className={`phone-app ${background !== 'none' ? 'has-background' : ''}`} style={backgroundStyle}>
-      {/* 首页常驻在底层:push 屏做容器变换时,外面露出来的必须是真实的上一屏而不是空白底 */}
-      <motion.section
-        className={`page main-page${screen === 'home' ? '' : ' receded'}`}
-        inert={screen !== 'home'}
-        aria-hidden={screen !== 'home'}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: reduceMotion ? 0 : .18 }}
-      >
-        {/* 一页一张的横滑分页器:两页各自保留纵向滚动位置,未激活的一页 inert */}
-        <div
-          className="tab-pager"
-          ref={pagerRef}
-          onScroll={syncTabFromScroll}
-          /* 手一碰就作废程序化守卫:接下来是用户在滑,判定要立刻生效 */
-          onPointerDown={() => { guardedUntil.current = 0; }}
+      {/* 出发页（V2）：冷启动一次性引导，看过即进首页 */}
+      {settings.onboarded === false ? <StartPage /> : <>
+        {/* 首页常驻在底层:push 屏做容器变换时,外面露出来的必须是真实的上一屏而不是空白底 */}
+        <motion.section
+          className={`page main-page${screen === 'home' ? '' : ' receded'}`}
+          inert={screen !== 'home'}
+          aria-hidden={screen !== 'home'}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: reduceMotion ? 0 : 0.18 }}
         >
-          <div className="tab-slide" inert={tab !== 'today'}>
-            <div className="app-scroll"><TodayPage titleLag={titleLag} /></div>
+          {/* 一页一张的横滑分页器:两页各自保留纵向滚动位置,未激活的一页 inert */}
+          <div
+            className="tab-pager"
+            ref={pagerRef}
+            onScroll={syncTabFromScroll}
+            /* 手一碰就作废程序化守卫:接下来是用户在滑,判定要立刻生效 */
+            onPointerDown={() => { guardedUntil.current = 0; }}
+          >
+            <div className="tab-slide" inert={tab !== 'today'}>
+              <div className="app-scroll"><TodayPage titleLag={titleLag} /></div>
+            </div>
+            <div className="tab-slide" inert={tab !== 'traces'}>
+              <div className="app-scroll"><TracesPage titleLag={titleLag} /></div>
+            </div>
           </div>
-          <div className="tab-slide" inert={tab !== 'memories'}>
-            <div className="app-scroll"><MemoriesPage titleLag={titleLag} /></div>
-          </div>
-        </div>
-        <TabBar />
-      </motion.section>
-      {/* 只在有 push 屏时才渲染这一层:空的绝对定位层会盖住整屏、把首页的点击全吃掉 */}
-      {screen !== 'home' && <div className="push-layer">
-        {screen === 'input' && <InputPage key="input" />}
-        {screen === 'action' && <ActionPage key="action" />}
-        {screen === 'record' && <RecordPage key="record" />}
-        {screen === 'appearance' && <AppearancePanel key="appearance" />}
-      </div>}
+          <TabBar />
+        </motion.section>
+        {/* 只在有 push 屏时才渲染这一层:空的绝对定位层会盖住整屏、把首页的点击全吃掉 */}
+        {screen !== 'home' && <div className="push-layer">
+          {screen === 'input' && <InputPage key="input" />}
+          {screen === 'action' && <ActionPage key="action" />}
+          {screen === 'record' && <RecordPage key="record" />}
+          {screen === 'appearance' && <AppearancePanel key="appearance" />}
+        </div>}
+      </>}
     </div>
   </div>;
 }

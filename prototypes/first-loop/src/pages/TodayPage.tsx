@@ -1,14 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { motion, useReducedMotion, type MotionValue } from 'motion/react';
-import { CaretDown } from '@phosphor-icons/react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { selectHomeQueue, useAppState, useDispatch } from '../store/store';
-import { formatDate } from '../lib/date';
+import { formatKicker } from '../lib/date';
+import { memoryDayLabel } from '../lib/memories-date';
+import { formatDuration, parseMinutes } from '../lib/duration';
+import { attemptCount, latestCover, outcomeTone } from '../lib/traces';
+import { useImageUrls } from '../lib/image-urls';
 import { EASE_OUT, riseIn, stagger } from '../lib/motion';
+import { growTextarea } from '../lib/textarea';
+import { captureExpandOrigin } from '../lib/screen-origin';
 import type { DO } from '../types';
 import AppearanceButton from '../components/AppearanceButton';
-import DOButton from '../components/DOButton';
 import PreviousRow from '../components/PreviousRow';
 import './today.css';
+
+/** 黑卡里的三个示例念头：点一下即填入，不给用户「想不出写什么」这道坎 */
+const EXAMPLE_IDEAS = ['跑步 10 分钟', '做一顿饭', '拍一张照片'];
 
 interface TodayPageProps {
   /**
@@ -18,11 +26,15 @@ interface TodayPageProps {
   titleLag: MotionValue<number>;
 }
 
+/**
+ * 今天页（V2 稿 02）：墨黑念头卡（写一句 → 帮我找到第一步）+ 正在进行 + 最近的痕迹。
+ * 念头存在 store.idea（与对话规划页同一份），切页不丢。
+ */
 export default function TodayPage({ titleLag }: TodayPageProps) {
-  const { dos, historyOpen } = useAppState();
+  const { dos, records, idea, historyOpen } = useAppState();
   const dispatch = useDispatch();
   const reduceMotion = useReducedMotion();
-  // 回收在渲染时按 now 计算,每分钟校准一次,跨过回收线的 DO 会自动下沉,无需后台任务
+  // 回收在渲染时按 now 计算，每分钟校准一次，跨过回收线的 DO 会自动下沉
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
@@ -30,51 +42,143 @@ export default function TodayPage({ titleLag }: TodayPageProps) {
   }, []);
 
   const { main, alternate, extra, recycled } = selectHomeQueue(dos, now);
-  // 没有活跃 DO 可推荐时,退而展示最近的回收 DO,首页不留空洞
-  const fallbackRows = main || alternate ? [] : recycled.slice(0, 3);
-  const rows = [main, alternate, ...fallbackRows].filter((item): item is DO => Boolean(item));
-  const mutedIds = new Set(fallbackRows.map((item) => item.id));
-  const canExpand = Boolean(main) && (extra.length > 0 || recycled.length > 0);
+  const moreRows: DO[] = [...(alternate ? [alternate] : []), ...extra];
+  const canExpand = Boolean(main) && moreRows.length + recycled.length > 0;
 
-  const openDO = (item: DO) => {
+  /* 正在进行卡：尝试次数 = 关联到它的记录条数；封面 = 最近一条带图的关联记录 */
+  const cover = main ? latestCover(records, main.id) : undefined;
+  const coverList = useMemo(() => (cover ? [cover] : []), [cover]);
+  const coverUrl = useImageUrls(coverList)[0];
+  const attempts = main ? attemptCount(records, main.id) : 0;
+  const maxMinutes = main ? parseMinutes(main.action.time) : null;
+
+  const ideaRef = useRef<HTMLTextAreaElement>(null);
+  const recent = records.slice(0, 2);
+  const ideaOf = (linkedDOId?: string) => dos.find((item) => item.id === linkedDOId)?.thought;
+
+  const goPlan = (event: MouseEvent<HTMLButtonElement>) => {
+    // 输入页从这个胶囊「长」出来：原点必须在卸载前同步量下
+    captureExpandOrigin(event.currentTarget);
+    dispatch({ type: 'setActiveDO', id: null });
+    dispatch({ type: 'setScreen', screen: 'input' });
+  };
+
+  const openAction = (event: MouseEvent<HTMLButtonElement>, item: DO) => {
+    captureExpandOrigin(event.currentTarget);
     dispatch({ type: 'setActiveDO', id: item.id });
     dispatch({ type: 'setIdea', idea: item.thought });
     dispatch({ type: 'setScreen', screen: 'action' });
   };
 
   return <>
-    {/* 页面位移交给原生横滑;只有大标题跟着惯性甩一下,手停即回原位(静止态恒为原位) */}
-    <header className="large-header">
+    {/* 页面位移交给原生横滑；只有大标题跟着惯性甩一下，手停即回原位 */}
+    <header className="today-header">
       <motion.div style={{ x: titleLag }}>
-        <span>{formatDate(new Date())}</span>
-        <h1>今天</h1>
+        <span className="kicker">{formatKicker(new Date(now))}</span>
+        <h1 className="page-title">今天</h1>
       </motion.div>
       <AppearanceButton />
     </header>
+
     <main className="today-content">
-      <motion.section className="do-intro" {...riseIn(reduceMotion, 0, 34)}>
-        <h2>现在想做什么？</h2>
-        <p>先写下来。DO 会把它变成可以开始的一步。</p>
-        <DOButton onClick={() => { dispatch({ type: 'setActiveDO', id: null }); dispatch({ type: 'setIdea', idea: '' }); dispatch({ type: 'setScreen', screen: 'input' }); }} />
-      </motion.section>
-      {rows.length > 0 && <motion.section className="previous-section" {...riseIn(reduceMotion, .12, 34)}>
-        <div className="previous-heading"><h3>最近的 DO</h3>{canExpand && <button onClick={() => dispatch({ type: 'toggleHistory' })} aria-label={historyOpen ? '收起更多 DO' : '展开更多 DO'} aria-expanded={historyOpen}><CaretDown className={historyOpen ? 'rotated' : ''} size={16} weight="bold" /></button>}</div>
-        <div className="do-history">
-          {rows.map((item, index) => <PreviousRow key={item.id} className={index > 0 ? 'divided' : undefined} muted={mutedIds.has(item.id)} text={item.thought} enterDelay={stagger(index, .09)} onClick={() => openDO(item)} />)}
-          {/* 展开区常驻挂载,靠 height/opacity 动画开合(收起也有动效);收起时 inert,键盘与读屏不会落进隐藏行。
-              这是容器高度动画,不涉及退场依赖,不受 DESIGN §5 页面切换约束影响。
-              inert/aria-hidden 挂在外层普通 div 上,不依赖动画库对自定义属性的透传。 */}
-          <div className="earlier-dos" inert={!historyOpen} aria-hidden={!historyOpen}>
-            <motion.div className="earlier-dos-body" initial={false}
-              animate={{ height: historyOpen ? 'auto' : 0, opacity: historyOpen ? 1 : 0 }}
-              transition={reduceMotion ? { duration: 0 } : { duration: .3, ease: EASE_OUT }}>
-              {extra.map((item, index) => <PreviousRow className="earlier-row" key={item.id} text={item.thought} enterDelay={stagger(index, .09, 5)} onClick={() => openDO(item)} />)}
-              {recycled.length > 0 && <p className="recycled-label">放了超过一天</p>}
-              {recycled.map((item, index) => <PreviousRow className="earlier-row" muted key={item.id} text={item.thought} enterDelay={stagger(extra.length + index, .09, 5)} onClick={() => openDO(item)} />)}
-            </motion.div>
-          </div>
+      <motion.section className="ink-card idea-card" {...riseIn(reduceMotion, 0, 30)}>
+        <span className="kicker">一个模糊的念头</span>
+        <textarea
+          ref={ideaRef}
+          className="idea-input"
+          rows={1}
+          value={idea}
+          placeholder="想做什么，写一句就行。"
+          aria-label="一个模糊的念头"
+          onChange={(event) => {
+            dispatch({ type: 'setIdea', idea: event.target.value });
+            growTextarea(event.target, 96);
+          }}
+        />
+        <div className="idea-chips">
+          {EXAMPLE_IDEAS.map((text) => <button
+            key={text}
+            className={`chip${idea === text ? ' selected' : ''}`}
+            onClick={() => dispatch({ type: 'setIdea', idea: text })}
+          >{text}</button>)}
         </div>
-      </motion.section>}
+        {/* 念头为空时不做「灰掉的按钮」（那会读成这个按钮坏了）：保持蜜桃色，点了把光标送进输入框 */}
+        <button className="pill pill-peach idea-go" onClick={(event) => {
+          if (!idea.trim()) {
+            ideaRef.current?.focus();
+            return;
+          }
+          goPlan(event);
+        }}>
+          帮我找到第一步
+          <ArrowRight size={17} weight="bold" />
+        </button>
+      </motion.section>
+
+      <motion.section className="today-section" {...riseIn(reduceMotion, 0.12, 30)}>
+        <div className="section-head">
+          <h2 className="section-title">正在进行</h2>
+          {canExpand && <button className="text-action" onClick={() => dispatch({ type: 'toggleHistory' })} aria-expanded={historyOpen}>
+            {historyOpen ? '收起' : '全部'}
+          </button>}
+        </div>
+        {main ? <>
+          <button className="card do-card" onClick={(event) => openAction(event, main)}>
+            <span className="do-cover">
+              {coverUrl
+                ? <img className="media-in" src={coverUrl} alt="" loading="lazy" />
+                : <span className="do-cover-fallback" aria-hidden="true" />}
+            </span>
+            <span className="do-main">
+              <strong>{main.thought}</strong>
+              <small>{attempts > 0
+                ? `已经试了 ${attempts} 次${maxMinutes ? ` · 最长 ${formatDuration(maxMinutes)}` : ''}`
+                : '还没动手，随时可以走第一步'}</small>
+            </span>
+            <span className="do-count">
+              <b className="figure">{attempts}</b>
+              <small>次尝试</small>
+            </span>
+          </button>
+        </> : <p className="today-empty">上面写一句，就会有一条 DO 在这里等你。</p>}
+
+        {/* 展开区常驻挂载，靠 height/opacity 开合；收起时 inert */}
+        {canExpand && <div className="do-earlier" inert={!historyOpen} aria-hidden={!historyOpen}>
+          <motion.div className="do-earlier-body" initial={false}
+            animate={{ height: historyOpen ? 'auto' : 0, opacity: historyOpen ? 1 : 0 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.3, ease: EASE_OUT }}>
+            {moreRows.map((item, index) => <PreviousRow key={item.id} className="earlier-row" text={item.thought} enterDelay={stagger(index, 0.09, 5)} onClick={() => {
+              dispatch({ type: 'setActiveDO', id: item.id });
+              dispatch({ type: 'setIdea', idea: item.thought });
+              dispatch({ type: 'setScreen', screen: 'action' });
+            }} />)}
+            {recycled.length > 0 && <p className="recycled-label">放了超过一天</p>}
+            {recycled.map((item, index) => <PreviousRow className="earlier-row" key={item.id} muted text={item.thought} enterDelay={stagger(moreRows.length + index, 0.09, 5)} onClick={() => {
+              dispatch({ type: 'setActiveDO', id: item.id });
+              dispatch({ type: 'setIdea', idea: item.thought });
+              dispatch({ type: 'setScreen', screen: 'action' });
+            }} />)}
+          </motion.div>
+        </div>}
+      </motion.section>
+
+      <motion.section className="today-section" {...riseIn(reduceMotion, 0.2, 30)}>
+        <div className="section-head">
+          <h2 className="section-title">最近的痕迹</h2>
+          {records.length > 0 && <button className="text-action" onClick={() => dispatch({ type: 'setTab', tab: 'traces' })}>看全部</button>}
+        </div>
+        {recent.length === 0
+          ? <p className="today-empty">还没有痕迹。做完一件事，回来写一句。</p>
+          : <div className="card trace-mini">
+              {recent.map((record, index) => <div className={`trace-mini-row${index > 0 ? ' divided' : ''}`} key={record.id}>
+                <span className={`trace-bar tone-${outcomeTone(record.outcome)}`} aria-hidden="true" />
+                <span className="trace-mini-text">
+                  <strong>{record.refined || record.text}</strong>
+                  <small>{memoryDayLabel(record.createdAt)}{record.outcome ? ` · ${record.outcome}` : ''}{ideaOf(record.linkedDOId) ? ` · ${ideaOf(record.linkedDOId)}` : ''}</small>
+                </span>
+              </div>)}
+            </div>}
+      </motion.section>
     </main>
   </>;
 }

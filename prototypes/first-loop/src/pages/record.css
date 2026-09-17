@@ -1,8 +1,4 @@
-/* RecordPage 记录创建页(#3/#4)。
-   只用 styles.css 既有 token 与全局类(nav-bar / icon-action / bottom-actions / primary-action);
-   本页新增样式全部收敛在这里,不改全局样式。 */
-
-/* ---------- 页面骨架:导航栏 + 滚动内容 + 底部保存栏 ---------- */
+/* 记录页（V2 稿 04）：这次怎么样？—— 结果四选 + 白卡原话 + 胶囊工具行 + 生成我的记录。 */
 
 .record-page {
   display: flex;
@@ -15,128 +11,138 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 22px 20px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 20px 26px;
 }
 
-/* 保存不可用:无字无图时降为灰底,复用 keyboard-action 的禁用处理 */
-.record-page .primary-action:disabled {
-  background: var(--surface-2);
-  color: var(--tertiary);
+.record-head .kicker {
+  letter-spacing: 0.06em;
+  font-family: inherit;
+  font-size: 12px;
+}
+.record-head h1 {
+  margin-top: 8px;
 }
 
-/* ---------- 主输入:原话,自动增高;surface 底衬保证背景图上的可读性(§7.5) ---------- */
+/* ---------- 结果四选：选中 = 黑描边 + 黑实心对勾 ---------- */
 
+.outcome-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.outcome-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 15px;
+  text-align: left;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.outcome-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border: 1.5px solid var(--hairline);
+  border-radius: 50%;
+  color: var(--on-ink);
+}
+.outcome-row.selected {
+  border-color: var(--ink);
+}
+.outcome-row.selected .outcome-mark {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+/* ---------- 原话：白卡内的自动增高 textarea ---------- */
+
+.record-text-card {
+  padding: 16px 18px;
+}
 .record-text {
   display: block;
-  box-sizing: border-box;
   width: 100%;
-  min-height: 132px;
-  padding: 14px;
+  min-height: 104px;
+  padding: 0;
   border: 0;
   outline: 0;
   resize: none;
   overflow: hidden;
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 17px;
-  line-height: 1.55;
-}
-
-.record-text::placeholder {
-  color: var(--secondary);
-}
-
-/* ---------- 帮我整理:唯一的 AI 触发点,文字按钮 ---------- */
-
-.record-refine {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 12px;
-  padding: 6px 0;
-  border: 0;
-  background: none;
-  color: var(--accent);
-  font-size: 15px;
-  font-weight: 600;
-  transition: opacity 0.15s;
-}
-
-.record-refine:disabled {
-  color: var(--tertiary);
-  font-weight: 500;
-}
-
-.record-refine:active:not(:disabled) {
-  opacity: 0.6;
-}
-
-.record-refine-error {
-  margin: 6px 0 0;
-  color: var(--secondary);
-  font-size: 13px;
-}
-
-/* ---------- 整理版:可编辑,surface 卡与原话区分 ---------- */
-
-.record-refined {
-  margin-top: 18px;
-}
-
-.record-refined h2 {
-  margin: 0 0 8px;
-  color: var(--secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.record-refined textarea {
-  display: block;
-  width: 100%;
-  min-height: 66px;
-  padding: 14px;
-  border: 0;
-  outline: 0;
-  resize: none;
-  overflow: hidden;
-  border-radius: 14px;
-  background: var(--surface);
+  background: transparent;
   color: var(--text);
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.62;
+}
+.record-text::placeholder {
+  color: var(--tertiary);
 }
 
-.record-refined p {
-  margin: 8px 2px 0;
-  color: var(--secondary);
-  font-size: 13px;
+/* ---------- 工具行：加照片 / 记录时间 / 帮我整理 / 关联 ---------- */
+
+.record-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.record-chip {
+  font-size: 12px;
+}
+.record-chip:disabled {
+  opacity: 0.45;
+}
+.record-chip input {
+  display: none;
+}
+/* 原生时间选择器：真正的输入控件留在 DOM 里（showPicker 需要可见元素），视觉上收掉 */
+.record-time-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* ---------- 图片多选:3 列缩略图 + 添加格,≤9 张 ---------- */
+.record-note {
+  color: var(--tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ---------- 图片：三列缩略图 + 添加格 ---------- */
 
 .record-images {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-top: 20px;
 }
-
 .record-image {
   position: relative;
 }
-
 .record-image img {
   display: block;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: 16px;
   object-fit: cover;
 }
-
 .record-image button {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 6px;
+  right: 6px;
   display: grid;
   place-items: center;
   width: 22px;
@@ -144,182 +150,100 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.5);
   color: #fff;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
-
 .record-image button:active {
   transform: scale(0.84);
   opacity: 0.8;
 }
-
 .record-add {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
+  display: grid;
+  place-items: center;
   aspect-ratio: 1;
-  border-radius: 12px;
-  background: var(--surface-2);
-  color: var(--secondary);
+  border: 1px dashed var(--hairline);
+  border-radius: 16px;
+  background: var(--field);
+  color: var(--tertiary);
   font-size: 12px;
   cursor: pointer;
-  transition: opacity 0.15s;
 }
-
-.record-add:active {
-  opacity: 0.7;
-}
-
 .record-add input {
   display: none;
 }
 
-/* 草稿恢复提示(#13):一行弱提示,不打断输入 */
-.record-draft-hint {
-  margin: 0 2px 10px;
-  color: var(--secondary);
-  font-size: 13px;
-}
+/* ---------- 整理版 ---------- */
 
-/* ---------- 关联 DO:标题行 + surface 卡(当前关联 / 展开候选) ---------- */
-
-.record-link {
-  margin-top: 26px;
-}
-
-.record-link-heading {
+.record-refined {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 2px 9px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
 }
-
-.record-link-heading span {
-  color: var(--secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.record-link-heading button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--secondary);
-}
-
-.record-link-heading svg {
-  transition: transform 0.2s;
-}
-
-.record-link-heading svg.rotated {
-  transform: rotate(180deg);
-}
-
-.record-link-card {
-  overflow: hidden;
-  border-radius: 13px;
-  background: var(--surface);
-}
-
-.record-link-current {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 52px;
-  padding: 10px 15px;
-}
-
-.record-link-current em {
-  flex: none;
-  padding: 2px 7px;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 600;
-}
-
-.record-link-current > span {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 15px;
-}
-
-.record-link-current > span.empty {
-  color: var(--secondary);
-}
-
-.record-link-current button {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--secondary);
-  transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-.record-link-current button:active,
-.record-link-heading button:active {
-  transform: scale(0.9);
-  opacity: 0.75;
-}
-
-.record-link-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.record-refined textarea {
+  display: block;
   width: 100%;
-  min-height: 50px;
-  padding: 10px 15px;
+  min-height: 72px;
+  padding: 0;
   border: 0;
-  background: var(--surface);
+  outline: 0;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
   color: var(--text);
-  text-align: left;
   font-size: 15px;
-  transition: background 0.18s ease;
+  line-height: 1.62;
 }
 
-.record-link-row:active {
-  background: var(--surface-2);
-}
+/* ---------- 关联选择器 ---------- */
 
-.record-link-row::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 15px;
-  height: 1px;
-  background: var(--separator);
+.record-picker {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
 }
-
-.record-link-row span {
+.record-picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+}
+.record-picker-row span {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.record-picker-row.selected {
+  background: var(--field);
+}
+.record-picker-row svg {
+  color: var(--terracotta);
+}
+.record-picker-clear {
+  align-self: flex-start;
+  padding: 8px 14px;
+}
 
-.record-link-row svg {
-  color: var(--accent);
+.record-draft-hint {
+  color: var(--tertiary);
+  font-size: 12px;
+}
+
+/* 保存不可用时主按钮已由 .primary-action:disabled 处理，这里补齐可读性 */
+.record-page .primary-action:disabled {
+  background: var(--field);
+  color: var(--tertiary);
+  opacity: 1;
 }

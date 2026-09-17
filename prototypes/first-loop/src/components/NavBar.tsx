@@ -7,5 +7,5 @@ interface NavBarProps {
 }
 
 export default function NavBar({ left, title, right }: NavBarProps) {
-  return <header className="nav-bar">{left}<span>{title}</span>{right}</header>;
+  return <header className="nav-bar">{left}<span className="nav-title">{title}</span>{right}</header>;
 }

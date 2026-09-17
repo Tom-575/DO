@@ -1,0 +1,109 @@
+/* 出发页（V2 稿 01）：满幅摄影 + 上黑下黑双向渐变遮罩，白字全部压在遮罩上。 */
+
+.start-page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.start-photo {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+/* 亮色满幅摄影必须有遮罩，否则白色文字与状态栏都不可读 */
+.start-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.18) 32%,
+    rgba(0, 0, 0, 0.34) 62%,
+    rgba(0, 0, 0, 0.78) 100%
+  );
+}
+
+.start-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  padding: max(30px, env(safe-area-inset-top)) 26px max(26px, env(safe-area-inset-bottom));
+}
+
+.start-logo {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--peach);
+  color: var(--ink);
+}
+
+.start-wordmark {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 118px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.start-copy {
+  width: 100%;
+}
+.start-copy .kicker {
+  color: rgba(255, 255, 255, 0.72);
+}
+.start-copy h1 {
+  margin: 8px 0 10px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.24;
+}
+.start-copy p {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.start-actions {
+  width: 100%;
+  margin-top: 26px;
+}
+.start-go {
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.start-go:active {
+  background: rgba(255, 255, 255, 0.24);
+  transform: scale(0.98);
+}
+.start-hint {
+  display: block;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  text-align: center;
+}

@@ -1,0 +1,160 @@
+/* 痕迹页（V2 稿 05）：居中标题 + 统计卡 + 时间线卡片流（筛选行按用户决定移除）。 */
+
+.traces-header {
+  padding: 26px 22px 12px;
+  text-align: center;
+}
+.traces-header .page-title {
+  margin-top: 5px;
+}
+
+.traces-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 16px 30px;
+}
+
+/* ---------- 统计 ---------- */
+
+.trace-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 20px 8px;
+}
+.trace-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.trace-stats .figure {
+  font-size: 34px;
+  color: var(--text);
+}
+.trace-stats .figure.accent {
+  color: var(--terracotta);
+}
+.trace-stats small {
+  color: var(--secondary);
+  font-size: 11px;
+}
+
+/* ---------- 时间线 ---------- */
+
+.trace-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.trace-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+}
+/* 无图记录：一块米色底，与有图卡区分层级，但不引入新色相 */
+.trace-card.text-only {
+  background: var(--field);
+  border-color: transparent;
+}
+.trace-cover {
+  position: relative;
+  display: block;
+}
+.trace-cover img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.trace-cover-count {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+.trace-cover-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  aspect-ratio: 4 / 3;
+  background: var(--field);
+  color: var(--tertiary);
+  font-size: 12px;
+}
+.trace-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px 16px 13px;
+}
+.trace-text {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.62;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+.trace-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--tertiary);
+  font-size: 11px;
+}
+.trace-meta button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--secondary);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.trace-card.text-only .trace-meta button {
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+}
+.trace-meta button:active {
+  transform: scale(0.9);
+  opacity: 0.75;
+}
+/* ---------- 空状态 ---------- */
+
+.traces-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: min(52vh, 460px);
+  padding: 0 32px;
+  text-align: center;
+}
+.traces-empty-title {
+  font-size: 16px;
+}
+.traces-empty-hint {
+  color: var(--secondary);
+  font-size: 13px;
+}

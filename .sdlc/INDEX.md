@@ -6,12 +6,12 @@ in their canonical artifacts.
 
 ## Current State
 
-- Active changes: 0
-- Lifecycle state: ready-for-plan
-- Last updated: 2026-09-16
+- Active changes: 1
+- Lifecycle state: build
+- Last updated: 2026-09-17
 ## Active Changes
 
-No active changes.
+- [ui-v2-redesign](changes/ui-v2-redesign/plan.md) —— UI V2 全套视觉与四屏闭环重做（stage: build，gate: awaiting-human-review；四处冲突已全部裁决落地：卡片不裁切 / 去筛选 / 导航三槽不放「我的」/ 行动页保留三选不复刻「换一个建议」）。
 ## Active Decisions
 
 No active decisions recorded.
@@ -24,6 +24,9 @@ No active decisions recorded.
 - Detailed records are read on demand; this index is the default entry point.
 
 ## Recent Learnings
+
+- 2026-09-17 —— **「按新稿换一整套 UI」会与既往逐条已确认决策打架**：本轮三处（三选出口数量、分享卡封面是否裁切、分类来源）在设计稿里与 `CONTEXT.md`／`DESIGN.md` 相反。先实现、后确认是流程瑕疵；下次遇到同类应**先列冲突清单交人工裁决**。详见 [changes/ui-v2-redesign/maintain.md](changes/ui-v2-redesign/maintain.md)。
+
 
 - 2026-09-16 —— **SDLC 入口装在了"某个运行时看得见、另一个看不见"的目录**，是「流程不自动触发」的机械主因（本项目技能在 `.zcode/skills/`，CodeBuddy 只扫 `.codebuddy/skills/`）。门禁必须落在**总是生效的规则** + **运行时会话语义入口**上，并给每个运行时写 fallback（扫不到就手动读 SKILL.md）。详见 [changes/interaction-motion-h5/maintain.md](changes/interaction-motion-h5/maintain.md)。
 - 2026-09-16 —— **两个工具缺陷（待修）**：① `validate_sdlc_state.py` 硬要求 `<项目根>/shared/*.md`，而本项目装在 `.zcode/shared/` ⇒ 校验恒红；② `inspect_sdlc_state.py` 与 `update_sdlc_state.py` 的工件字段名不是一套（`intent` vs `plan`）⇒ **任何活跃 change 都被误判 `Missing: intent`**，而它正是 navigator 的第一步。详见同一工件。

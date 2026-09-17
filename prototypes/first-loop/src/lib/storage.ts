@@ -19,10 +19,15 @@ const DRAFT_KEY = 'do.recordDraft';
 /** 当前数据契约版本;结构变化时递增并在 hydrate 前做迁移 */
 export const SCHEMA_VERSION = 1;
 
+/* V2 的首页是纯净暖白(设计稿如此);摄影底只在出发页出现,与「背景」设置无关 */
 export const defaultSettings: AppSettings = {
   theme: 'system',
-  background: `${import.meta.env.BASE_URL}assets/mountain-walk.jpg`,
+  background: 'none',
+  onboarded: false,
 };
+
+/** 出发页的满幅摄影底:固定资源,不随设置变化 */
+export const START_PHOTO = `${import.meta.env.BASE_URL}assets/mountain-walk.jpg`;
 
 /* ---------- IndexedDB:DO 与记录 ---------- */
 
@@ -99,7 +104,9 @@ export function loadSettings(): AppSettings {
             apiKey: typeof partial.ai.apiKey === 'string' ? partial.ai.apiKey : '',
           }
         : undefined;
-    return { theme, background, ...(ai ? { ai } : {}) };
+    // 旧设置里没有 onboarded:缺省视为「已看过」，避免老用户被出发页拦一次
+    const onboarded = partial.onboarded !== false;
+    return { theme, background, onboarded, ...(ai ? { ai } : {}) };
   } catch {
     return { ...defaultSettings };
   }

@@ -1,28 +1,106 @@
-/* ActionPage 底部三选(#5):马上做 / 等等 / 不想做了。
-   马上做与等等复用全局 .primary-action / .secondary-action;这里只定义第三档的静默按钮。 */
+/* 第一步页（V2 稿 03）：大标题 + 黑卡（超窄体大字 = 时长）+ 三个时长胶囊 + 底部三选。 */
 
-/* 不想做了:轻量灰字,与「等等」拉开层级,不与内容竞争 */
-.quiet-action {
-  min-height: 40px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
+.action-page {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.action-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 6px 22px 20px;
+}
+
+.action-headline {
+  /* 稿子里这句是一行：字号收到 28px，390 宽内正好放下 */
+  margin: 6px 0 10px;
+  font-size: 28px;
+}
+.action-idea {
   color: var(--secondary);
   font-size: 13px;
-  font-weight: 500;
-  transition: transform 0.15s, color 0.15s;
+  line-height: 1.55;
 }
 
-.quiet-action:active {
-  transform: scale(0.95);
-}
+/* ---------- 黑卡：大字 + 一行说明 ---------- */
 
-.quiet-action:disabled {
-  color: var(--tertiary);
+.action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
 }
-
-/* 生成中:占位标题退为 tertiary,不与内容竞争 */
+.action-figure {
+  font-size: 74px;
+  color: var(--on-ink);
+}
+.action-figure em {
+  font-size: 0.34em;
+}
+.action-rule {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.action-body {
+  color: var(--on-ink);
+  font-size: 15px;
+  line-height: 1.62;
+}
+.action-stop {
+  color: var(--on-ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
 .action-pending {
-  color: var(--tertiary);
+  padding: 30px 0;
+  color: var(--on-ink-soft);
+  font-size: 20px;
+}
+
+/* ---------- 时长三档：选中 = 蜜桃填充 ---------- */
+
+.duration-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.duration-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 74px;
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--text);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+}
+.duration-option .figure {
+  font-size: 30px;
+}
+.duration-option small {
+  color: var(--secondary);
+  font-size: 11px;
+}
+.duration-option.selected {
+  border-color: transparent;
+  background: var(--peach);
+  color: var(--ink);
+}
+.duration-option.selected small {
+  color: rgba(15, 15, 15, 0.6);
+}
+.duration-option:active:not(:disabled) {
+  transform: scale(0.972);
+}
+.duration-option:disabled {
+  opacity: 0.5;
 }

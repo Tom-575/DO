@@ -8,6 +8,7 @@ import { SPRING_IN } from '../lib/motion';
 import { useExpandTransition } from '../lib/use-expand-transition';
 import type { AppSettings } from '../types';
 import NavBar from './NavBar';
+import './appearance.css';
 import './sheet-extras.css';
 
 /** 面板里可改的三项设置 —— 就是「草稿」的全部内容 */
@@ -107,12 +108,12 @@ export default function AppearancePanel() {
     transition={expand.animated || reduceMotion ? { duration: 0 } : SPRING_IN}
   >
     <NavBar
-      left={<button className="icon-action" aria-label="取消" onClick={cancel}><X size={22} /></button>}
-      title="外观"
-      right={<button className="icon-action icon-action-end" aria-label="确认" onClick={confirm}><Check size={23} weight="bold" /></button>}
+      left={<button className="icon-action" aria-label="取消" onClick={cancel}><X size={18} weight="bold" /></button>}
+      title="我的"
+      right={<button className="icon-action icon-action-end" aria-label="确认" onClick={confirm}><Check size={19} weight="bold" /></button>}
     />
     <div className="appearance-content">
-      <p className="appearance-lead">让 DO 更像你的空间</p>
+      <p className="appearance-lead">让 DO 更像你的空间。改动点 ✓ 才生效，点 ✕ 全部丢弃。</p>
 
       <div className="appearance-group">
         <span className="group-label">明暗</span>

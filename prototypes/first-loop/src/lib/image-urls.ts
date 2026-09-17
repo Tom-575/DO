@@ -5,7 +5,7 @@ import type { RecordImage } from '../types';
  * 把 RecordImage[] 统一转成可渲染的地址:
  * string(URL/dataURL)直接用;Blob 现场创建 object URL,
  * 在依赖变化或卸载时统一 revoke,避免泄漏。
- * MemoryItem / RecordPage / RecordCard 共用,新增渲染处不要再复制这份逻辑。
+ * TraceItem / RecordPage / ShareCard 共用,新增渲染处不要再复制这份逻辑。
  */
 export function useImageUrls(images: RecordImage[]): string[] {
   const [urls, setUrls] = useState<string[]>([]);

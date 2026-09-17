@@ -1,36 +1,69 @@
-/* 分享卡片(#14):卡片本体固定浅色,收卡片的人没有应用的暗色上下文;
-   遮罩与操作按钮用应用 token,随主题走。 */
+/* 分享卡（V2 稿 06）：一整屏深色，预览即导出物。
+   深色固定，不随应用主题走——收卡的人没有这个应用的上下文。 */
 
-.card-overlay {
+.share-page {
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: 40;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 14px;
-  padding: 20px;
-  background: rgba(24, 18, 14, 0.62);
-  /* 进入即淡入;关闭不做退场(CSS 动画与确定性退场约束一致) */
+  padding: max(16px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+  background: #0f0f0f;
+  color: #fff;
   animation: fade-in 0.2s ease;
 }
 
-.card-panel {
+.share-head {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  width: 100%;
-  max-height: 100%;
-  overflow-y: auto;
-  animation: card-rise 0.44s cubic-bezier(0.16, 1.22, 0.3, 1);
+  justify-content: space-between;
+  gap: 12px;
+}
+.share-head h2 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.share-close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.share-close:active {
+  transform: scale(0.9);
+  opacity: 0.8;
 }
 
+/* 卡片舞台：预览图按可用高度等比缩放，短屏也不裁 */
+.share-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.share-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 22px;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
+}
+.share-page.animated .share-canvas {
+  animation: card-rise 0.44s cubic-bezier(0.16, 1.22, 0.3, 1);
+}
 @keyframes card-rise {
   from {
     opacity: 0;
-    transform: translateY(34px) scale(0.9);
+    transform: translateY(26px) scale(0.94);
   }
   to {
     opacity: 1;
@@ -38,60 +71,75 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .card-overlay,
-  .card-panel {
-    animation: none;
-  }
+.share-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
-
-.card-actions button {
-  transition: transform 0.15s ease, opacity 0.15s ease;
+.share-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 2px 2px 6px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
 }
-
-.card-actions button:active {
-  transform: scale(0.94);
+.share-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
-
-/* ---------- 卡片本体:canvas 预览即导出物 ---------- */
-
-.record-card {
+.switch {
+  position: relative;
   display: block;
-  box-sizing: border-box;
-  width: 340px;
-  max-width: 100%;
-  border-radius: 18px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+  width: 46px;
+  height: 28px;
+  flex: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.22s ease;
 }
-
-/* ---------- 预览层操作 ---------- */
-
-.card-error {
-  margin: 0;
-  color: #ffd9c7;
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.share-switch input:checked + .switch {
+  background: var(--peach);
+}
+.share-switch input:checked + .switch::after {
+  transform: translateX(18px);
+}
+.share-save {
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #fff;
+}
+.share-save:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+.share-note {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.share-quiet {
+  color: rgba(255, 255, 255, 0.5);
   font-size: 13px;
 }
 
-.card-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.card-actions button {
-  min-height: 44px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 13px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.card-actions button:first-child {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-}
-
-.card-save {
-  background: var(--accent);
-  color: #fff;
+@media (prefers-reduced-motion: reduce) {
+  .share-page,
+  .share-page.animated .share-canvas {
+    animation: none;
+  }
 }

@@ -1,3 +1,17 @@
 version: 1
-updated_at: '2026-09-16'
-active_changes: []
+updated_at: '2026-09-17'
+active_changes:
+- id: ui-v2-redesign
+  title: UI V2 全套视觉与四屏闭环重做
+  stage: build
+  risk: medium
+  gate: awaiting-human-review
+  owner: codebuddy-agent
+  source: 用户 2026-09-17 要求按六屏稿复刻 V2 UI
+  plan: .sdlc/changes/ui-v2-redesign/plan.md
+  design: .sdlc/changes/ui-v2-redesign/design.md
+  build: .sdlc/changes/ui-v2-redesign/build.md
+  test: .sdlc/changes/ui-v2-redesign/test.md
+  deploy: .sdlc/changes/ui-v2-redesign/deploy.md
+  maintain: .sdlc/changes/ui-v2-redesign/maintain.md
+  gate_note: 待人工裁决三处冲突

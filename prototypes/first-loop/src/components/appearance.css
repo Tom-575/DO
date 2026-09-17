@@ -1,0 +1,106 @@
+/* 我的（设置，V2 语言）：一整屏分组 + 胶囊选项。
+   明暗 / 背景 / AI 走草稿模型（✕ 丢弃、✓ 写回），数据分组立即生效。 */
+
+.appearance-page {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.appearance-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 20px 34px;
+}
+.appearance-lead {
+  margin: 0 2px 20px;
+  color: var(--secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.appearance-group + .appearance-group {
+  margin-top: 24px;
+}
+.group-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px;
+  color: var(--secondary);
+  font-size: 12px;
+}
+/* 分组标:这一组不参与草稿,点下去就写入,不随 ✕ 撤销 */
+.group-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--tertiary);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.choice-row,
+.background-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.choice-row button,
+.background-grid button,
+.background-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 50px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--secondary);
+  font-size: 13px;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.choice-row button.active,
+.background-grid button.active {
+  border-color: transparent;
+  background: var(--peach);
+  color: var(--ink);
+}
+.background-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+.background-grid button,
+.background-upload {
+  flex-direction: column;
+  gap: 6px;
+  min-height: 88px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+.background-upload input {
+  display: none;
+}
+.background-swatch {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+}
+.background-swatch.plain { background: var(--bg); }
+.background-swatch.mist { background: linear-gradient(135deg, #e2dcd4, #faf7f3); }
+.background-swatch.night { background: linear-gradient(135deg, #1b1a18, #4d4740); }
+.background-swatch.upload { background: var(--field); color: var(--terracotta); }
+
+.appearance-page button {
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.18s ease, color 0.18s ease;
+}
+.appearance-page .choice-row button:active,
+.appearance-page .background-grid button:active {
+  transform: scale(0.97);
+}

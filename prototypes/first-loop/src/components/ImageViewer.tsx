@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { ImageBroken, PencilSimple, X } from '@phosphor-icons/react';
 import { SPRING_BOUNCE } from '../lib/motion';
 import { useExpandTransition } from '../lib/use-expand-transition';
+import './image-viewer.css';
 
 /**
  * 全屏图片查看器(#17,小红书式):黑底、scroll-snap 左右滑动切换、页码指示。
@@ -19,7 +20,7 @@ interface ImageViewerProps {
 
 export default function ImageViewer({ urls, initialIndex, onClose, onEdit }: ImageViewerProps) {
   const reduceMotion = useReducedMotion();
-  // 查看器从被点的那张缩略图扩开、关闭时收回它(原点由 MemoryItem 在点图时量下)
+  // 查看器从被点的那张缩略图扩开、关闭时收回它（原点由 TraceItem 在点图时量下）
   const bloom = useExpandTransition(onClose);
   const [index, setIndex] = useState(initialIndex);
   const [failed, setFailed] = useState<number[]>([]);

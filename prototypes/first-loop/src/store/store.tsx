@@ -70,8 +70,9 @@ function reducer(state: StoreState, action: AppAction): StoreState {
         id: createId(),
         text: action.text,
         images: action.images ?? [],
-        createdAt: Date.now(),
+        createdAt: action.createdAt ?? Date.now(),
         ...(action.refined === undefined ? {} : { refined: action.refined }),
+        ...(action.outcome === undefined ? {} : { outcome: action.outcome }),
         ...(action.linkedDOId === undefined ? {} : { linkedDOId: action.linkedDOId }),
       };
       const dos = action.linkedDOId
@@ -155,7 +156,7 @@ export interface HomeQueue {
   alternate: DO | undefined;
   /** 收起区展开后再显示的其余候选,最多 3 条;更早的念头留在 store,不并列展示 */
   extra: DO[];
-  /** 超过 24h 的待定 DO,排在展开区末尾;已记录的 DO 不在此列(痕迹在回忆页) */
+  /** 超过 24h 的待定 DO,排在展开区末尾;已记录的 DO 不在此列(痕迹在痕迹页) */
   recycled: DO[];
 }
 

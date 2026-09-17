@@ -1,20 +1,50 @@
+/* ============================================================
+   DO · V2 设计系统（依据 UI/2026-09-17-19-51-33/DO-UI 六屏稿）
+   - 暖白底 + 墨黑大卡 + 蜜桃/陶土强调；胶囊贯穿全部可点件
+   - 超窄体大字（Bebas）只用于拉丁数字与 kicker；中文走系统字体
+   - 单层语义：颜色不承载新状态，结果标签用文字而非色义
+   ============================================================ */
+
 :root {
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bebas Neue", "Oswald", "Arial Narrow", "Helvetica Neue", sans-serif;
+
   color-scheme: light dark;
-  --bg: #f2f2f7;
-  --surface: #fff;
-  --surface-2: #e9e9ee;
-  --text: #1c1c1e;
-  --secondary: #68686e;
-  --tertiary: #8e8e93;
-  --separator: rgba(60, 60, 67, 0.18);
-  --accent: #ff6b35;
-  --accent-pressed: #e85b2b;
-  --accent-text: #fff;
-  --backdrop: rgba(242, 242, 247, 0.82);
+
+  /* 色板（设计稿提炼） */
+  --bg: #f7f5f2;
+  --card: #ffffff;
+  --field: #f1ede7;
+  --text: #0f0f0f;
+  --secondary: #8c867d;
+  --tertiary: #aaa39b;
+  --hairline: #ece8e2;
+  --ink: #0f0f0f;
+  --ink-2: #101010;
+  --on-ink: #ffffff;
+  --on-ink-soft: rgba(255, 255, 255, 0.66);
+  --on-ink-faint: rgba(255, 255, 255, 0.13);
+  --peach: #f2c9b4;
+  --peach-press: #e8b79c;
+  --terracotta: #c97b58;
+
+  /* 兼容旧 token 名：强调色一律指向蜜桃 */
+  --accent: var(--peach);
+  --accent-pressed: var(--peach-press);
+  --accent-text: var(--ink);
+  --surface: var(--card);
+  --surface-2: var(--field);
+  --separator: var(--hairline);
+  --backdrop: rgba(247, 245, 242, 0.55);
+
+  --radius-card: 24px;
+  --radius-ink: 28px;
+  --shadow-card: 0 10px 30px rgba(28, 22, 16, 0.06);
+  --shadow-ink: 0 16px 40px rgba(15, 15, 15, 0.18);
 }
+
 * {
   box-sizing: border-box;
 }
@@ -25,13 +55,24 @@ body,
   margin: 0;
 }
 body {
-  background: #d7d7dc;
+  background: #e7e2da;
   color: var(--text);
 }
 button,
-textarea {
+textarea,
+input {
   font: inherit;
+  color: inherit;
 }
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+/* ---------- 手机框 ---------- */
+
 .prototype-frame {
   min-height: 100dvh;
   display: grid;
@@ -53,8 +94,7 @@ textarea {
   background-size: cover;
   background-position: center;
 }
-/* iOS 不显示常驻滚动条:框架内所有滚动容器统一隐藏(原先散落在 .app-scroll / .tab-pager /
-   .plan-stream / .viewer-track 各处,新加的滚动容器总会漏掉一个) */
+/* iOS 不显示常驻滚动条：框架内统一隐藏，新加的滚动容器不会再漏 */
 .phone-app,
 .phone-app * {
   scrollbar-width: none;
@@ -62,18 +102,11 @@ textarea {
 .phone-app *::-webkit-scrollbar {
   display: none;
 }
-/* 磨砂照片只给首页:push 屏底下垫着常驻的首页,半透明 + blur 透出来会是首页的鬼影 */
+/* 磨砂照片只给首页：push 屏底下垫着常驻的首页，半透明 + blur 透出来会是首页的鬼影 */
 .phone-app.has-background .main-page {
   background: color-mix(in srgb, var(--bg) 34%, transparent);
   backdrop-filter: blur(6px) saturate(110%);
 }
-.phone-app.has-background .do-intro,
-.phone-app.has-background .previous-section,
-.phone-app.has-background .memory-time,
-.phone-app.has-background .memory p { position: relative; z-index: 1; }
-.phone-app.has-background .do-button,
-.phone-app.has-background .do-history,
-.phone-app.has-background .memory.text-only p { box-shadow: 0 8px 28px rgba(0,0,0,.12); }
 .page {
   position: absolute;
   inset: 0;
@@ -86,46 +119,41 @@ textarea {
   flex-direction: column;
   overflow: hidden;
   padding: env(safe-area-inset-top, 0) 0 0;
-  /* 自建层叠上下文:内部的卡片(30)/查看器(40) 不会浮到 push 屏之上 */
   z-index: 0;
-  /* 兜底:有些路径不播收回动画(如保存后直接切回首页),背景也要有个短过渡 */
-  transition: filter .24s ease, transform .24s ease;
+  transition: filter 0.24s ease, transform 0.24s ease;
 }
-/* 背景退后:有 push 屏盖上来时首页失焦并轻微前移。
-   放大 1.04 是必需的——全幅 blur 在四边采不到内容会淡出一圈,放大正好把虚边推出框外。 */
+/* 背景退后：有 push 屏盖上来时首页失焦并轻微前移（放大是把全幅 blur 的虚边推出框外） */
 .main-page.receded {
   filter: blur(12px);
   transform: scale(1.04);
   transition:
-    filter .42s cubic-bezier(.2, .9, .24, 1),
-    transform .42s cubic-bezier(.2, .9, .24, 1);
+    filter 0.42s cubic-bezier(0.2, 0.9, 0.24, 1),
+    transform 0.42s cubic-bezier(0.2, 0.9, 0.24, 1);
 }
-/* 前景在收回(.bloom-out)时背景跟着对焦回来。用 :has 让背景直接感知前景的动画阶段,
-   省掉「把动画阶段同步进 store」这条路,新加 push 屏也不会漏。 */
 .phone-app:has(.bloom-out) .main-page.receded {
   filter: none;
   transform: none;
-  transition-duration: .34s;
+  transition-duration: 0.34s;
 }
-/* push 屏统一盖在首页之上;首页因此可以一直挂在下面 */
 .push-layer {
   position: absolute;
   inset: 0;
   z-index: 1;
 }
-
-/* 容器变换:裁切值由 lib/use-expand-transition.ts 内联给出,这里只负责过渡曲线 */
+/* 容器变换：裁切值由 lib/use-expand-transition.ts 内联给出 */
 .bloom-in,
 .bloom-out {
   will-change: clip-path;
 }
 .bloom-in {
-  transition: clip-path .42s cubic-bezier(.2, .9, .24, 1);
+  transition: clip-path 0.42s cubic-bezier(0.2, 0.9, 0.24, 1);
 }
 .bloom-out {
-  transition: clip-path .34s cubic-bezier(.55, .04, .78, .3);
+  transition: clip-path 0.34s cubic-bezier(0.55, 0.04, 0.78, 0.3);
   pointer-events: none;
 }
+
+/* ---------- 分页器（今天 / 痕迹） ---------- */
 
 .app-scroll {
   min-height: 0;
@@ -133,8 +161,6 @@ textarea {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-/* 今天 / 回忆的横滑分页:一页一张,原生 scroll-snap 承担手势与吸附,
-   每页一份 .app-scroll,各自记住纵向滚动位置。 */
 .tab-pager {
   flex: 1;
   min-height: 0;
@@ -142,7 +168,6 @@ textarea {
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  /* 到头不再把横滑手势交给浏览器前进/后退 */
   overscroll-behavior-x: contain;
 }
 .tab-slide {
@@ -151,221 +176,219 @@ textarea {
   display: flex;
   flex-direction: column;
   scroll-snap-align: start;
-  /* 一次手势只翻一页,不会一甩跨过中间页 */
   scroll-snap-stop: always;
 }
-.large-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 38px 22px 12px;
-}
-.large-header span {
+
+/* ---------- 排版 ---------- */
+
+.kicker {
   display: block;
-  margin-bottom: 3px;
-  color: var(--secondary);
-  font-size: 13px;
-}
-.large-header h1 {
-  margin: 0;
-  font-size: 36px;
-  line-height: 1.08;
-  letter-spacing: -0.04em;
-}
-.large-header button,
-.nav-bar button {
-  border: 0;
-  background: none;
-  color: var(--accent);
-}
-.large-header button { transition: transform .2s ease, opacity .2s ease; }
-.large-header button:active { transform: scale(.9); opacity: .7; }
-.today-content {
-  display: flex;
-  flex-direction: column;
-  padding: 20px 16px 32px;
-}
-.do-intro {
-  padding: 12px 6px 0;
-}
-.do-intro h2 {
-  margin: 0 0 10px;
-  font-size: 27px;
-  line-height: 1.18;
-  letter-spacing: -0.035em;
-}
-.do-intro p {
-  max-width: 310px;
-  margin: 0;
-  color: var(--secondary);
-  font-size: 15px;
-  line-height: 1.55;
-}
-.do-button {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  align-items: center;
-  width: 100%;
-  margin-top: 28px;
-  padding: 18px;
-  border: 0;
-  border-radius: 16px;
-  background: var(--accent);
-  color: var(--accent-text);
-  text-align: left;
-  box-shadow: 0 7px 18px rgba(255, 107, 53, 0.24);
-  /* 缩放交给 motion 的 whileTap / whileHover,这里只管底色 */
-  transition: background 0.15s;
-}
-.do-button:active {
-  background: var(--accent-pressed);
-}
-.do-button > span {
-  font-size: 28px;
-  font-weight: 750;
-  letter-spacing: -0.06em;
-}
-.do-button small {
-  grid-column: 1;
-  font-size: 13px;
-  opacity: 0.82;
-}
-.do-button svg {
-  grid-column: 2;
-  grid-row: 1/3;
-}
-.previous-section {
-  margin-top: 52px;
-}
-.previous-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 6px 9px;
-}
-.previous-heading h3 {
-  margin: 0;
-  color: var(--secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-.previous-heading button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--accent);
-}
-.previous-heading svg {
-  transition: transform 0.2s;
-}
-.previous-heading svg.rotated {
-  transform: rotate(180deg);
-}
-.do-history {
-  overflow: hidden;
-  border-radius: 13px;
-  background: var(--surface);
-}
-.previous-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 56px;
-  padding: 0 15px;
-  border: 0;
-  background: var(--surface);
-  color: var(--text);
-  text-align: left;
-  transition: background .18s ease, transform .18s ease;
-}
-/* 列表行按下给一次 iOS 式的高亮;缩放由 motion 的 whileTap 负责(内联 transform 会盖住 CSS) */
-.previous-row:active {
-  background: var(--surface-2);
-}
-.previous-row svg {
-  transition: transform .18s ease;
-}
-.previous-row:active svg {
-  transform: translateX(3px);
-}
-.previous-row span {
-  max-width: 86%;
-  font-size: 16px;
-}
-.previous-row svg {
   color: var(--tertiary);
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
-.earlier-dos {
-  overflow: hidden;
+.kicker.centered {
+  text-align: center;
 }
-.earlier-row {
-  position: relative;
+.page-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
 }
-.earlier-row:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 15px;
-  height: 1px;
-  background: var(--separator);
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
-/* 底部 Tab 栏:无分隔线、无独立底色,与页面同处一层背景——视觉上看不出是一条栏,功能照旧 */
-.tab-bar {
-  flex: 0 0 auto;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  min-height: 60px;
-  padding: 6px 56px max(6px, env(safe-area-inset-bottom));
-  background: none;
+.muted {
+  color: var(--secondary);
+  font-size: 13px;
 }
-.tab-bar button {
-  /* 左右两个按钮撑满各自 1fr 的格子:点击区域比图标大得多,指示点也能按格子居中 */
-  position: relative;
-  display: flex;
+/* 超窄体大字：数字 + 单位 */
+.figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: 0.005em;
+}
+.figure em {
+  font-style: normal;
+  color: var(--peach);
+  font-size: 0.42em;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 容器 ---------- */
+
+.card {
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+.ink-card {
+  border-radius: var(--radius-ink);
+  background: var(--ink-2);
+  color: var(--on-ink);
+  box-shadow: var(--shadow-ink);
+}
+.ink-card .kicker {
+  color: var(--on-ink-soft);
+}
+@media (prefers-color-scheme: light) {
+  .card {
+    box-shadow: none;
+    border: 1px solid var(--hairline);
+  }
+}
+
+/* ---------- 胶囊与按钮 ---------- */
+
+.pill {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+.pill-peach {
+  background: var(--peach);
+  color: var(--ink);
+}
+.pill-peach:active:not(:disabled) {
+  background: var(--peach-press);
+}
+.pill-ink {
+  background: var(--ink-2);
+  color: var(--on-ink);
+}
+.pill-ink:active:not(:disabled) {
+  opacity: 0.86;
+}
+.pill-outline {
+  border: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--text);
+}
+.pill-outline:active:not(:disabled) {
+  background: var(--field);
+}
+.pill:disabled {
+  /* 未满足前置条件时仍然看得出是那个按钮（黑卡上的蜜桃胶囊降到 0.55 会读成灰棕） */
+  opacity: 0.6;
+}
+.pill-wide {
+  width: 100%;
+  min-height: 56px;
+  font-size: 16px;
+  font-weight: 600;
+}
+/* 深色卡里的胶囊：描边用白色低透明 */
+.ink-card .pill-outline {
+  border-color: var(--on-ink-faint);
+  color: var(--on-ink);
+}
+.text-action {
+  border: 0;
+  background: none;
+  color: var(--secondary);
+  font-size: 14px;
+  transition: opacity 0.15s ease;
+}
+.text-action:active {
+  opacity: 0.55;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--secondary);
+  font-size: 13px;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+.chip:active {
+  opacity: 0.7;
+}
+.chip.selected {
+  border-color: var(--ink);
+  background: var(--ink-2);
+  color: var(--on-ink);
+}
+/* 深色卡里的 chip：无边框、白色低透明底 */
+.ink-card .chip {
+  border-color: transparent;
+  background: var(--on-ink-faint);
+  color: var(--on-ink);
+}
+
+/* ---------- 底部操作区 ---------- */
+
+.bottom-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px max(20px, env(safe-area-inset-bottom));
+}
+.primary-action {
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink-2);
+  color: var(--on-ink);
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.primary-action:not(:disabled):active {
+  transform: scale(0.975);
+}
+.primary-action:disabled {
+  opacity: 0.35;
+}
+.secondary-action {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+.secondary-action:not(:disabled):active {
+  opacity: 0.5;
+}
+.quiet-action {
+  padding: 6px 4px;
   border: 0;
   background: none;
   color: var(--tertiary);
-  transition: color .2s ease, opacity .2s ease;
+  font-size: 13px;
+  transition: opacity 0.15s ease;
 }
-.tab-bar button.tab-create {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-text);
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.28);
+.quiet-action:active:not(:disabled) {
+  opacity: 0.55;
 }
-.tab-bar button.selected {
-  color: var(--accent);
+.quiet-action:disabled {
+  opacity: 0.4;
 }
-/* 按下只用透明度:按钮被 transform 缩放会带偏指示点的测量位置 */
-.tab-bar button:active { opacity: .5; }
-/* 选中态:图标放大 + 填充,比单纯换色更容易一眼看到当前在哪一页 */
-.tab-bar button svg { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
-.tab-bar button.selected svg { transform: scale(1.14); }
-/* 滑动指示点:两个 Tab 共用 layoutId,切换时在按钮之间平移 */
-.tab-indicator {
-  position: absolute;
-  left: 50%;
-  bottom: 3px;
-  width: 16px;
-  height: 3px;
-  margin-left: -8px;
-  border-radius: 999px;
-  background: var(--accent);
-}
+
+/* ---------- 导航栏 ---------- */
+
 .nav-bar {
   position: sticky;
   z-index: 2;
@@ -373,239 +396,212 @@ textarea {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  min-height: 58px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--separator);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(20px);
+  gap: 10px;
+  min-height: 60px;
+  padding: 14px 18px 6px;
+  background: linear-gradient(color-mix(in srgb, var(--bg) 92%, transparent), transparent);
+  backdrop-filter: blur(14px);
 }
-.nav-bar > span {
-  font-size: 16px;
+.nav-bar > span.nav-title {
+  font-size: 15px;
   font-weight: 600;
   text-align: center;
 }
-/* 导航栏按钮(返回 / 取消 / 确认)按下给一次可见反馈 */
-.nav-bar button {
-  transition: opacity .18s ease, transform .18s ease;
-}
-.nav-bar button:active {
-  opacity: .5;
-  transform: scale(.86);
-}
-.nav-spacer {
-  width: 32px;
-}
 .icon-action {
   justify-self: start;
-  padding: 8px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
-/* 右侧的图标按钮(与左侧返回箭头对称) */
+.icon-action:active {
+  opacity: 0.6;
+  transform: scale(0.9);
+}
 .icon-action-end {
   justify-self: end;
 }
-.input-page {
-  overflow: hidden;
+.nav-text {
+  justify-self: end;
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  color: var(--tertiary);
+  font-size: 13px;
+  transition: opacity 0.15s ease;
 }
-.input-content {
-  padding: 36px 22px;
+.nav-text:active {
+  opacity: 0.55;
 }
-.input-content label {
-  display: block;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.035em;
+.nav-spacer {
+  width: 40px;
 }
-.input-content textarea {
-  width: 100%;
-  height: 230px;
-  margin-top: 24px;
+
+/* ---------- 底部导航（三槽深色胶囊） ---------- */
+
+.tab-bar {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin: 6px 16px max(14px, env(safe-area-inset-bottom));
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--ink-2);
+  box-shadow: 0 16px 36px rgba(15, 15, 15, 0.26);
+}
+.tab-bar button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 52px;
   padding: 0;
   border: 0;
-  outline: 0;
-  resize: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 21px;
-  line-height: 1.45;
+  border-radius: 999px;
+  background: none;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.22s ease, opacity 0.2s ease;
 }
-.input-content textarea::placeholder {
-  color: var(--tertiary);
+/* 按钮被 transform 缩放会带偏指示胶囊的测量位置，按下只用透明度 */
+.tab-bar button:active {
+  opacity: 0.6;
 }
-.input-content p {
-  margin: 10px 0;
-  color: var(--secondary);
-  font-size: 13px;
+.tab-bar button.selected {
+  color: var(--ink);
 }
-.keyboard-action {
+.tab-bar svg,
+.tab-label {
+  position: relative;
+  z-index: 1;
+}
+.tab-label {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.tab-pill {
   position: absolute;
-  right: 18px;
-  bottom: 24px;
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-text);
+  inset: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: #fff;
 }
-.keyboard-action:disabled {
-  background: var(--surface-2);
-  color: var(--tertiary);
+
+/* ---------- 图片与动效 ---------- */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-.action-page {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+@keyframes media-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.action-content {
-  flex: 1;
-  padding: 48px 24px;
+.media-in {
+  animation: media-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.source-idea {
-  margin: 0 0 22px;
-  color: var(--secondary);
-  font-size: 15px;
+/* 「想一下…」的呼吸：表达「正在处理」，不是装饰 */
+@keyframes thinking-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
 }
-.action-content h1 {
-  margin: 0;
-  font-size: 34px;
-  line-height: 1.16;
-  letter-spacing: -0.045em;
+.thinking-pulse {
+  animation: thinking-pulse 1.4s ease-in-out infinite;
 }
-.action-meta {
-  display: grid;
-  gap: 11px;
-  margin-top: 34px;
-  padding: 18px;
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--secondary);
-  font-size: 15px;
-  line-height: 1.4;
+
+/* ---------- 主题 ---------- */
+
+.theme-light {
+  color-scheme: light;
 }
-.bottom-actions {
-  padding: 16px 16px max(18px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--separator);
+.theme-dark {
+  color-scheme: dark;
+  --bg: #121110;
+  --card: #1c1a18;
+  --field: #221f1d;
+  --text: #f5f1ec;
+  --secondary: #a49d94;
+  --tertiary: #7d766e;
+  --hairline: #2b2724;
+  --ink-2: #0a0a0a;
+  --on-ink-faint: rgba(255, 255, 255, 0.1);
+  --peach: #f2c9b4;
+  --peach-press: #e2b699;
+  --terracotta: #d98d66;
+  --backdrop: rgba(8, 8, 8, 0.4);
+  --shadow-card: none;
 }
-.primary-action,
-.secondary-action {
-  width: 100%;
-  min-height: 52px;
-  border: 0;
-  border-radius: 14px;
-  font-size: 17px;
-  font-weight: 600;
-  transition: background .2s ease, color .2s ease, transform .15s ease, opacity .2s ease;
+.theme-dark .phone-app {
+  background-color: var(--bg);
 }
-/* 从「生成中不可点」到可点,按钮自己渐变过去,不再是一下子跳变 */
-.primary-action:not(:disabled):active { transform: scale(.96); }
-.primary-action:disabled { opacity: .92; }
-.primary-action {
-  background: var(--accent);
-  color: var(--accent-text);
+.theme-dark .phone-app.has-background .main-page {
+  background: rgba(8, 8, 8, 0.34);
 }
-.secondary-action {
-  margin-top: 9px;
-  background: transparent;
-  color: var(--accent);
-  font-weight: 500;
+.theme-dark .card {
+  border: 1px solid var(--hairline);
+  box-shadow: none;
 }
-.secondary-action:not(:disabled):active { transform: scale(.96); }
-.memory-stream {
-  padding: 10px 16px 30px;
+/* 深色下「墨黑填充」会消失在页面底上：主按钮与选中 chip 换成蜜桃填充（仍是同一个强调色） */
+.theme-dark .primary-action,
+.theme-dark .chip.selected {
+  background: var(--peach);
+  border-color: transparent;
+  color: var(--ink);
 }
-.memory {
-  margin-bottom: 34px;
-}
-.memory-time {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  /* 右侧让出导出按钮(.memory-export 30px)宽度,避免钟点被压(#18 走查修复) */
-  padding: 0 42px 10px 5px;
-}
-.memory-time strong {
-  font-size: 20px;
-}
-.memory-time span {
-  color: var(--tertiary);
-  font-size: 13px;
-}
-.memory img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4/3;
-  border-radius: 15px;
-  object-fit: cover;
-}
-.memory p {
-  margin: 14px 5px 10px;
-  font-size: 16px;
-  line-height: 1.55;
-}
-.memory.text-only p {
-  margin-top: 2px;
-  padding: 18px;
-  border-radius: 15px;
-  background: var(--surface);
-  font-size: 18px;
-  line-height: 1.55;
-}
-.memories-header {
-  padding-bottom: 18px;
-}
-/* 外观页:一整屏,裁切起点由 lib/use-expand-transition.ts 内联给出,这里只管版式 */
-.appearance-page {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.appearance-content {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 22px 20px 34px;
-}
-.appearance-lead {
-  margin: 0 2px 24px;
-  color: var(--secondary);
-  font-size: 15px;
-  line-height: 1.5;
-}
-.group-label { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--secondary); font-size:13px; }
-/* 分组标:这一组不参与草稿,点下去就写入,不随 ✕ 撤销(替代原来那句免责说明) */
-.group-tag { padding:2px 8px; border-radius:999px; background:var(--surface-2); color:var(--tertiary); font-size:11px; font-style:normal; }
-.appearance-group + .appearance-group { margin-top:22px; }
-.choice-row,.background-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
-.choice-row button,.background-grid button,.background-upload { display:flex; align-items:center; justify-content:center; gap:7px; min-height:46px; border:1px solid var(--separator); border-radius:12px; background:var(--bg); color:var(--secondary); font-size:13px; }
-.choice-row button.active,.background-grid button.active { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,var(--surface)); }
-.background-grid { grid-template-columns:repeat(4,1fr); }
-.background-grid button,.background-upload { flex-direction:column; gap:4px; min-height:80px; }
-.background-upload input { display:none; }
-.background-swatch { display:grid; place-items:center; width:34px; height:34px; border-radius:10px; border:1px solid var(--separator); }
-.background-swatch.plain { background:var(--bg); }.background-swatch.mist { background:linear-gradient(135deg,#d8e1e8,#f6f1ec); }.background-swatch.night { background:linear-gradient(135deg,#182334,#5d6b78); }.background-swatch.upload { background:var(--surface-2); color:var(--accent); }
-@keyframes fade-in { from { opacity:0; } to { opacity:1; } }
-/* 「想一下…」的呼吸:表达「正在处理」,不是装饰(行动页用) */
-@keyframes thinking-pulse { 0%,100% { opacity:.18; } 50% { opacity:1; } }
-.thinking-pulse { animation: thinking-pulse 1.4s ease-in-out infinite; }
-/* 图片落位:淡入 + 从 1.04 缩回,避免「啪」地贴上去 */
-.media-in { animation: media-in .4s cubic-bezier(.2,.8,.2,1); }
-@keyframes media-in { from { opacity:0; transform: scale(1.04); } to { opacity:1; transform:none; } }
-@media (prefers-reduced-motion: reduce) { .thinking-pulse,.media-in { animation:none; } .bloom-in,.bloom-out { transition:none; } }
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #000;
-    --surface: #1c1c1e;
-    --surface-2: #2c2c2e;
-    --text: #f2f2f7;
-    --secondary: #aeaeb2;
-    --tertiary: #8e8e93;
-    --separator: rgba(84, 84, 88, 0.58);
-    --accent: #ff7446;
-    --accent-pressed: #df5f35;
+  /* 「跟随系统」在系统为暗色时走同一套深色 token（与 .theme-dark 同值） */
+  .theme-system {
+    color-scheme: dark;
+    --bg: #121110;
+    --card: #1c1a18;
+    --field: #221f1d;
+    --text: #f5f1ec;
+    --secondary: #a49d94;
+    --tertiary: #7d766e;
+    --hairline: #2b2724;
+    --ink-2: #0a0a0a;
+    --on-ink-faint: rgba(255, 255, 255, 0.1);
+    --peach-press: #e2b699;
+    --terracotta: #d98d66;
+    --backdrop: rgba(8, 8, 8, 0.4);
+    --shadow-card: none;
+  }
+  .theme-system .primary-action,
+  .theme-system .chip.selected {
+    background: var(--peach);
+    border-color: transparent;
+    color: var(--ink);
+  }
+  .theme-system .phone-app {
+    background-color: var(--bg);
   }
   body {
-    background: #171719;
+    background: #17161a;
   }
   .phone-app {
     box-shadow:
@@ -613,14 +609,6 @@ textarea {
       0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 }
-.theme-light { color-scheme: light; --bg:#f2f2f7; --surface:#fff; --surface-2:#e9e9ee; --text:#1c1c1e; --secondary:#68686e; --tertiary:#8e8e93; --separator:rgba(60,60,67,.18); --accent:#ff6b35; --accent-pressed:#e85b2b; --accent-text:#fff; }
-.theme-light { --backdrop: rgba(242,242,247,.55); }
-.theme-dark { color-scheme: dark; --bg:#09090b; --surface:rgba(32,32,35,.88); --surface-2:rgba(52,52,56,.9); --text:#f5f5f7; --secondary:#c1c1c6; --tertiary:#a1a1a8; --separator:rgba(170,170,178,.28); --accent:#ff8058; --accent-pressed:#e86d47; --accent-text:#fff; --backdrop: rgba(5,5,7,.34); }
-.theme-light .phone-app,.theme-dark .phone-app { background-color:var(--bg); }
-.theme-dark .phone-app.has-background .main-page { background:rgba(5,5,7,.3); }
-.theme-dark .phone-app.has-background .large-header h1,
-.theme-dark .phone-app.has-background .do-intro h2 { text-shadow:0 2px 18px rgba(0,0,0,.78); }
-.theme-dark .do-button { box-shadow:0 10px 30px rgba(0,0,0,.28); }
 @media (max-width: 520px) {
   .prototype-frame {
     display: block;
@@ -638,5 +626,13 @@ textarea {
   * {
     scroll-behavior: auto !important;
     transition: none !important;
+  }
+  .thinking-pulse,
+  .media-in {
+    animation: none;
+  }
+  .bloom-in,
+  .bloom-out {
+    transition: none;
   }
 }
