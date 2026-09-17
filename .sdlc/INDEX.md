@@ -7,11 +7,13 @@ in their canonical artifacts.
 ## Current State
 
 - Active changes: 1
-- Lifecycle state: build
+- Lifecycle state: maintain
 - Last updated: 2026-09-17
 ## Active Changes
 
-- [ui-v2-redesign](changes/ui-v2-redesign/plan.md) —— UI V2 全套视觉与四屏闭环重做（stage: build，gate: awaiting-human-review；四处冲突已全部裁决落地：卡片不裁切 / 去筛选 / 导航三槽不放「我的」/ 行动页保留三选不复刻「换一个建议」）。
+- **ui-v2-redesign**: stage `maintain`, gate `deployed-stable`, risk `medium`
+  工件：[plan](changes/ui-v2-redesign/plan.md) · [design](changes/ui-v2-redesign/design.md) · [build](changes/ui-v2-redesign/build.md) · [test](changes/ui-v2-redesign/test.md) · [deploy](changes/ui-v2-redesign/deploy.md) · [maintain](changes/ui-v2-redesign/maintain.md)
+  **开放跟进**：真机（iOS / 安卓）走查未做；`maintain.md` 里的流程学习已落本文件 Recent Learnings。
 ## Active Decisions
 
 No active decisions recorded.
