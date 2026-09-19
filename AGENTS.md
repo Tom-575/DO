@@ -46,6 +46,7 @@
 - `docs/TODO.md`：任务拆解（一期–五期 + SDLC 流程修复），多窗口认领以它为准。
 - `docs/DO-PROMPT.md`：DO 的 AI 行为 prompt；`research/`：竞品与视觉参考。
 - `UI/<时间戳>/`：设计稿原件（设计工具导出）。
+- `CLAUDE_SDLC_TODO.md`：**SDLC 工具箱的长期优化台账**（工具本身的待办，不是产品需求）。
 - 旧设计文档（DESIGN_DIRECTION / DESIGN_CONCEPT_V2 / DESIGN_GRILL / HANDOFF_RESTART）已于 2026-09-13 删除，不要引用。
 
 ## 仓库边界

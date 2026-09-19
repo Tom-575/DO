@@ -73,7 +73,7 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 
 > **`add-artifact` 的正确用法**：它**生成模板**，不是「登记已有工件的路径」。工件已经写好时**不要**调用它——`lifecycle.yaml` 里的路径是 `start` / `advance` 自动填的（守卫加了之后调用只会被拒绝，不会再有损失）。
 
-**工具箱侧待办**（见 `docs/TODO.md` #41）：gate 词表写进 SKILL、`refresh-index` 局部重写、`advance` 不沿用旧 gate、「等待人工」状态、DAILY 模板、工件非空校验脚本。
+**工具箱侧待办台账**：`CLAUDE_SDLC_TODO.md`（长期维护，含完成度与验收命令；`docs/TODO.md` #41 指向它）。概要：gate 词表写进 SKILL、`refresh-index` 局部重写、`advance` 不沿用旧 gate、「等待人工」状态、DAILY 模板、工件非空校验脚本。
 
 ## 7. 门禁铁律三处同文校验
 
