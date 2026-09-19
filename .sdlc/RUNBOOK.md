@@ -38,10 +38,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py refresh-index
 python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 ```
 
-两个已知现象（工具箱待修，见第 6 节）：
+两个**已修**的历史坑（2026-09-19，详见第 6 节）：
 
-- **`refresh-index` 的重写范围**：源码 `sync_index()` 覆盖 **`## Current State` 到 `## Active Decisions` 之间的一切**（不是只有 Active Changes 那一段）。手写内容必须放在 **`## Active Decisions` 之后**——放中间会被整段抹掉（2026-09-19 实测被抹两次；`INDEX.md` 的 `## Change Artifacts` 段因此放在 Active Decisions 之后）。
-- **`advance` 会把传入的 gate 写进新阶段**（`found["gate"] = args.gate`），于是出现 `stage: maintain` + `gate: deployed-stable` 这类组合——机器状态里看不出「新阶段还没人工确认」。要表达「等人工」就显式把 gate 置回 `awaiting-human-review`。
+- **`refresh-index` 的重写范围**：现在只整段重写 `## Current State`（纯数据），Active Changes 列表只改 `<!-- changes:start -->` / `<!-- changes:end -->` 标记之间的行。**手写备注放在标记之外即可**（旧格式文件首次运行会自动补上标记）。
+- **`advance` 写入新阶段的 gate**：现在推进后新阶段一律是 `awaiting-human-review`，**不会**把上一阶段刚批准的 gate 带过去——所以每个阶段都要各自 `set-gate` 一次；`stage: maintain` + `gate: deployed-stable` 这种组合不会再出现。
 
 ## 4. 每阶段必需工件（`lifecycle.yaml` 的字段名 = 工件名）
 
@@ -62,6 +62,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 
 当前阶段该有的工件必须非空：**验收表有行、证据链接有目标**。链接目标不存在 = 等于没有证据。
 
+**机械校验**（2026-09-19 新增，本机）：`python Tools/claude-sdlc/scripts/check_artifacts_nonempty.py .`
+它检查每个活跃 change **当前阶段**的工件：无模板占位符（`<change name>` / `TBD` / `（待填）` 等）、表格有数据行；`test` / `deploy` / `maintain` 阶段还要求至少一条**目标存在**的证据链接。
+通过时输出 `artifacts are gate-ready (N active change(s) checked)`；未接入 `validate`，属按需运行。
+
 ## 6. 本机改动与去向（换机器会丢，故在此留档）
 
 | 日期 | 改动 | 去向 |
@@ -69,6 +73,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 | 2026-09-19 | `inspect_sdlc_state.py` 的 FIELDS 由旧名改为 `plan/design/build/test/deploy/maintain` | 已提交工具箱本地仓库 `3a8332a`；**工具箱无 remote，无法 push 上游** → 本表即去向 |
 | 2026-09-19 | `validate_sdlc_state.py` 不再硬编码 `<root>/shared`，改为候选探测 | 同上 |
 | 2026-09-19 | `update_sdlc_state.py` 的 `add-artifact` 加**存在性守卫**：绝不用模板覆盖已存在的工件（本轮实测踩坑——已写好的 design/build/test 被空模板清空） | 已提交工具箱本地仓库；同上无 remote |
+| 2026-09-19 | `refresh-index`（`sync_index`）改为**标记内重写**：只改 `<!-- changes:start -->` / `<!-- changes:end -->` 之间的行（旧格式首次运行会自动补上标记）。此前会连手写备注一起抹掉，实测被抹两次 | 同上 |
+| 2026-09-19 | `advance` 不再沿用上一阶段的 gate：推进后新阶段一律置 `awaiting-human-review`（每个阶段各自 `set-gate` 一次），避免「`stage: maintain` + `gate: deployed-stable`」这种看不出未确认的组合 | 同上 |
+| 2026-09-19 | navigator SKILL 补 **gate 词表**与 `awaiting-human-review` 的含义；`shared/artifact-contracts.md` 补**阶段↔字段名↔gate** 对照表与改名历史 | 同上 |
+| 2026-09-19 | 新增 `.sdlc/templates/daily.md`（DAILY 模板）与 `scripts/check_artifacts_nonempty.py`（工件非空校验） | 同上 |
 | 2026-09-19 | `.sdlc/changes/record-card-export-h5/design.md` 一处假 Markdown 链接（文件名模板被当成链接目标） | 随本项目提交 |
 
 > **`add-artifact` 的正确用法**：它**生成模板**，不是「登记已有工件的路径」。工件已经写好时**不要**调用它——`lifecycle.yaml` 里的路径是 `start` / `advance` 自动填的（守卫加了之后调用只会被拒绝，不会再有损失）。

@@ -105,6 +105,7 @@
 - [x] **#21 建立运行日志 DAILY.md**（2026-09-19 完成，change `sdlc-toolbox-alignment`）— 已落 `.sdlc/DAILY.md`（铁律 + 模板 + 当日记录）、`.sdlc/RUNBOOK.md` §8 指向它、`INDEX.md` Entry Points 挂入口、`AGENTS.md` 加一句约定「每轮会话结束前追加一节」。
 - [ ] **#41 SDLC 工具链对齐**（2026-09-19 立项，change `sdlc-toolbox-alignment`）— 已完成的部分见该 change 的 build/test；**剩下的都是工具箱行为改动，需单独评估上游语义**：① gate 词表写进 SKILL（现在只活在脚本字典里，实测传错即拒）；② 加「等待人工」状态（词表里没有，只能沿用旧 gate）；③ `advance` 不沿用上一阶段的 gate；④ `refresh-index` 只重写 `<!-- generated -->` 标记内（现在会覆盖 INDEX 手写段）；⑤ DAILY 模板进工具箱 + navigator 约定；⑥ 工件非空校验脚本（对应 #22 的机械校验，目前只有 RUNBOOK §5 的文字规则）；⑥b `add-artifact` 覆盖已存在工件的问题**已在本机修**（加守卫，见 `.sdlc/RUNBOOK.md` §6）——该项已完成；⑦ `.sdlc/learnings/`、`.sdlc/decisions/` 空目录去留；⑧ 模板去掉 `status:`（消除与 lifecycle.yaml 双写漂移，本轮已见实例）；⑨ 同文 hash 校验可做成 pre-commit。
   来源清单与证据：`CLAUDE_SDLC_TODO.md`——**该文件是 SDLC 优化的长期台账**（用户 2026-09-19 指定单独保留，专门用于优化 SDLC），本条目与其同步维护。
+  **2026-09-19 进度**：① 词表已进 navigator（6 个阶段 SKILL 待办）②「等待人工」已文档化 ③ `advance` 已改 ④ `refresh-index` 已改标记内重写 ⑤ DAILY 模板 ✅ ⑥ 非空校验脚本 ✅（`check_artifacts_nonempty.py`）；⑦⑧ 未动；⑨ 保持手动。详见该台账的 A 段。
 - [ ] **#22 gate 证据非空约束** — .sdlc/INDEX.md「Active Constraints」加一条:gate 放行前该阶段工件必须非空(验收表有行、证据链接有目标);AGENTS.md 同步一句;后续可给 inspect_sdlc_state.py 外加非空校验脚本机械化。
 
 ## 数据契约(所有窗口共用;谁改谁同步本文件并提交)
