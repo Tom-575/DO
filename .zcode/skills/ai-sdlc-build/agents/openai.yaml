@@ -1,4 +1,0 @@
-interface:
-  display_name: "AI SDLC Build"
-  short_description: "Implement an accepted design in verified slices"
-  default_prompt: "Use $ai-sdlc-build to implement this accepted design."

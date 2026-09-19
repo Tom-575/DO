@@ -1,4 +1,0 @@
-interface:
-  display_name: "AI SDLC Plan"
-  short_description: "Turn a request into accepted intent"
-  default_prompt: "Use $ai-sdlc-plan to establish the intent and Plan gate for this change."
