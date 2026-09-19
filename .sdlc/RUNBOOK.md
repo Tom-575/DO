@@ -68,7 +68,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 |---|---|---|
 | 2026-09-19 | `inspect_sdlc_state.py` 的 FIELDS 由旧名改为 `plan/design/build/test/deploy/maintain` | 已提交工具箱本地仓库 `3a8332a`；**工具箱无 remote，无法 push 上游** → 本表即去向 |
 | 2026-09-19 | `validate_sdlc_state.py` 不再硬编码 `<root>/shared`，改为候选探测 | 同上 |
+| 2026-09-19 | `update_sdlc_state.py` 的 `add-artifact` 加**存在性守卫**：绝不用模板覆盖已存在的工件（本轮实测踩坑——已写好的 design/build/test 被空模板清空） | 已提交工具箱本地仓库；同上无 remote |
 | 2026-09-19 | `.sdlc/changes/record-card-export-h5/design.md` 一处假 Markdown 链接（文件名模板被当成链接目标） | 随本项目提交 |
+
+> **`add-artifact` 的正确用法**：它**生成模板**，不是「登记已有工件的路径」。工件已经写好时**不要**调用它——`lifecycle.yaml` 里的路径是 `start` / `advance` 自动填的（守卫加了之后调用只会被拒绝，不会再有损失）。
 
 **工具箱侧待办**（见 `docs/TODO.md` #41）：gate 词表写进 SKILL、`refresh-index` 局部重写、`advance` 不沿用旧 gate、「等待人工」状态、DAILY 模板、工件非空校验脚本。
 
