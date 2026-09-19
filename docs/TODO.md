@@ -83,6 +83,17 @@
 用户又定 ④ **底部不放「我的」**——今天页右上头像已是入口,导航落为三槽(今天 / 开始 / 痕迹)。
 最后一条 ① **行动页出口** 也定了:**方案 C = 保留三选、不复刻「换一个建议」**。四处冲突已全部裁决,工件已回写(DESIGN §2.1/§3/§4、plan.md、build.md、test.md)。
 
+## 六期(2026-09-19 立项,范围:V2 真机反馈)
+
+> 五期 V2 的 test 只覆盖到桌面 Chromium 模拟视口，「真机走查」一直挂在 maintain 的 Follow-up 里没做；用户真机上手后报出 1 个阻断 + 2 处体验问题 + 1 项待讨论的改版。六期先修阻断，再收表达；卡片改版单独讨论后再动手。多窗口认领规则同一期。
+
+- [ ] **#42 第一步页返回卡死(阻断)** — 从「正在进行」卡进入第一步页(编辑既有 DO)后点左上「返回」，页面被弹回第一步页，观感即「返回键一直卡」。根因：返回按钮把屏幕设回对话页(`setScreen('input')`)，而对话页**挂载即自动重发首页念头**(InputPage 的 seed effect)，AI 落定后 `setScreen('action')` 又推回第一步页——每次返回都夹一次真实 AI 请求，形成「返回 → 弹回」循环。修法：第一步页的返回不再回对话页，改走 `useExpandTransition().leave()` 收回首页(与「放弃这一步」同义)，念头与 activeDOId 按既有 `finalizeLeave` 清理。判据：编辑态点返回必须落到今天页且不再重发请求。
+- [ ] **#43 今天 / 痕迹横滑手势失效** — 手指左右滑不动(指示胶囊与程序化滚动都正常)。根因：App 里 `tab → 分页位置` 的 effect 在「越过中点立刻翻」时会 `pager.scrollTo({behavior:'smooth'})`，而这次 tab 变化正是**用户手势**触发的；触摸拖拽期间调用程序化滚动会打断/取消原生触摸滚动，表现为「滑一下就弹回」。四期 `interaction-motion-h5/test.md` 的 Untested 第一条已点名「真触摸串(pointerdown→move→up 的 scroll-snap 拖拽)未覆盖」，当时只用 `scrollLeft=430` 验证了吸附。修法：分清 tab 变化的来源(手势 / 点 Tab)，手势驱动的那一次只让状态跟上、绝不介入滚动位置。
+- [ ] **#44 念头卡去掉示例 chip** — 首页「一个模糊的念头」卡里的三个推荐示例(跑步 10 分钟 / 做一顿饭 / 拍一张照片)去掉，只留输入框与「帮我找到第一步」。理由(用户 2026-09-19)：推荐词把「模糊的念头」收窄成三个固定答案，与「写一句就行」相抵。连带删 `EXAMPLE_IDEAS`、`.idea-chips` 样式，DESIGN §3 同步。
+- [ ] **#45 痕迹导出卡片改版(待讨论，本轮不动手)** — 用户 2026-09-19：「痕迹导出的卡片可能要重新设计一下样式或者模板」，并明确「最后做，卡片设计到时候再讨论」。**动手前先开一轮讨论并落 `CONTEXT.md` / `DESIGN.md`**；待讨论维度见 change `v2-device-feedback` 的 plan.md「Open decisions」。
+
+## SDLC 流程修复(2026-09-17 立项)
+
 > intent:修审计发现的四个缺口——空证据放行、学习零沉淀、无运行日志、三期零工件;同步验证 SDLC skill 本身(用户正在开发中测试)。建议 #19 → #20 → #21/#22 顺序,#21 与 #22 可并行。
 
 - [ ] **#19 补录二期空 test.md** — record-writing-h5 / record-card-export-h5 / ai-dialogue-planning-h5 三个 test.md 是空模板但已放行;按各自 build.md、git 提交(6ad5ecc / 0ef2d57 / f40158b)、部署 run 34763304466 还原验收标准与结果,顶部标注「as-built 补录,2026-09-14」。
@@ -91,7 +102,9 @@
   - **0ef2d57 html-to-image 挂起**:根因未诊断(嵌入式 webview 下为何挂起——跨域图片 promise 不 resolve?),短期防复发 = 契约写死「导出一律 canvas 手绘,禁用 DOM 截图库」,未来重引入截图前必须先诊断
   - **2b6f391 FileList 静默失败**:根因已知(异步处理器读实时引用被释放);防复发 = 契约加「事件对象必须在处理器内同步快照」+ 多图上传列入走查清单
   - **流程事故**:三期 #16-#18 零 SDLC 工件直接执行;根因 = skill 未介入也无兜底;防复发 = #21 日报约定 + #22 非空约束,并在三期任务旁注明豁免/补录方式
-- [ ] **#21 建立运行日志 DAILY.md** — 新建 .sdlc/DAILY.md(模板 + 铁律:凡写 passed 必挂证据链接;「待决策」为空 = 当日无需人工动作);INDEX.md「Entry Points」挂入口;AGENTS.md 增加约定「每个窗口会话结束前追加一节」。
+- [x] **#21 建立运行日志 DAILY.md**（2026-09-19 完成，change `sdlc-toolbox-alignment`）— 已落 `.sdlc/DAILY.md`（铁律 + 模板 + 当日记录）、`.sdlc/RUNBOOK.md` §8 指向它、`INDEX.md` Entry Points 挂入口、`AGENTS.md` 加一句约定「每轮会话结束前追加一节」。
+- [ ] **#41 SDLC 工具链对齐**（2026-09-19 立项，change `sdlc-toolbox-alignment`）— 已完成的部分见该 change 的 build/test；**剩下的都是工具箱行为改动，需单独评估上游语义**：① gate 词表写进 SKILL（现在只活在脚本字典里，实测传错即拒）；② 加「等待人工」状态（词表里没有，只能沿用旧 gate）；③ `advance` 不沿用上一阶段的 gate；④ `refresh-index` 只重写 `<!-- generated -->` 标记内（现在会覆盖 INDEX 手写段）；⑤ DAILY 模板进工具箱 + navigator 约定；⑥ 工件非空校验脚本（对应 #22 的机械校验，目前只有 RUNBOOK §5 的文字规则）；⑦ `.sdlc/learnings/`、`.sdlc/decisions/` 空目录去留；⑧ 模板去掉 `status:`（消除与 lifecycle.yaml 双写漂移，本轮已见实例）；⑨ 同文 hash 校验可做成 pre-commit。
+  来源清单与证据：`CLAUDE_SDLC_TODO.md`（该文件在本轮拆完后删除，内容已并入本条目与 `.sdlc/RUNBOOK.md` §6）。
 - [ ] **#22 gate 证据非空约束** — .sdlc/INDEX.md「Active Constraints」加一条:gate 放行前该阶段工件必须非空(验收表有行、证据链接有目标);AGENTS.md 同步一句;后续可给 inspect_sdlc_state.py 外加非空校验脚本机械化。
 
 ## 数据契约(所有窗口共用;谁改谁同步本文件并提交)

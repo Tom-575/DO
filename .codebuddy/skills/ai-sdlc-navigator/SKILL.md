@@ -6,25 +6,25 @@ disable: false
 
 # SDLC Navigator（DO 项目的运行时入口）
 
-本技能是 `.zcode/skills/ai-sdlc-navigator/SKILL.md` 的**薄封装**：本项目原生的 SDLC 技能装在 `.zcode/skills/`（claude-sdlc 约定），**当前运行时不会自动加载那个目录**，所以入口放在这里。**权威定义永远是 `.zcode/skills/` 下的源文件，本文件只是导航。** 逐字照做前请打开源文件。
+本技能是 `Tools/claude-sdlc/skills/ai-sdlc-navigator/SKILL.md` 的**薄封装**：工具箱本体在 `Tools/claude-sdlc/`（本机、被 `.gitignore` 忽略），**当前运行时不会自动加载那个目录**，所以入口放在这里。**权威定义永远是工具箱里的源文件，本文件只是导航。** 逐字照做前请打开源文件；该目录不存在时先按 `.sdlc/RUNBOOK.md` 的「装工具箱三步」补上。
 
 ## 第一步：读状态与权威文件
 
 1. `.sdlc/INDEX.md` —— 当前状态、Active Constraints、Recent Learnings、入口链接
 2. `.sdlc/lifecycle.yaml` —— `active_changes`
-3. `.zcode/skills/ai-sdlc-navigator/SKILL.md` —— 完整流程（Navigate 四步）
-4. `.zcode/shared/` 下按需：`lifecycle.md`（阶段跃迁与 gate）、`risk-model.md`（复杂度深度）、`evidence-policy.md`（证据要求）、`artifact-contracts.md`（工件字段）
+3. `Tools/claude-sdlc/skills/ai-sdlc-navigator/SKILL.md` —— 完整流程（Navigate 四步）
+4. `Tools/claude-sdlc/shared/` 下按需：`lifecycle.md`（阶段跃迁与 gate）、`risk-model.md`（复杂度深度）、`evidence-policy.md`（证据要求）、`artifact-contracts.md`（工件字段）
 
 ## 第二步：按状态加载对应阶段技能
 
 | 当前状态 | 加载 |
 |---|---|
-| intent 不清或未被接受 | `.zcode/skills/ai-sdlc-plan/SKILL.md` |
-| 有 intent、无已接受方案 | `.zcode/skills/ai-sdlc-design/SKILL.md` |
-| 有方案、无构建候选 | `.zcode/skills/ai-sdlc-build/SKILL.md` |
-| 有构建候选、无独立判定 | `.zcode/skills/ai-sdlc-test/SKILL.md` |
-| 已判定、未发布 | `.zcode/skills/ai-sdlc-deploy/SKILL.md` |
-| 线上信号 / 恢复 / 沉淀学习 | `.zcode/skills/ai-sdlc-maintain/SKILL.md` |
+| intent 不清或未被接受 | `Tools/claude-sdlc/skills/ai-sdlc-plan/SKILL.md` |
+| 有 intent、无已接受方案 | `Tools/claude-sdlc/skills/ai-sdlc-design/SKILL.md` |
+| 有方案、无构建候选 | `Tools/claude-sdlc/skills/ai-sdlc-build/SKILL.md` |
+| 有构建候选、无独立判定 | `Tools/claude-sdlc/skills/ai-sdlc-test/SKILL.md` |
+| 已判定、未发布 | `Tools/claude-sdlc/skills/ai-sdlc-deploy/SKILL.md` |
+| 线上信号 / 恢复 / 沉淀学习 | `Tools/claude-sdlc/skills/ai-sdlc-maintain/SKILL.md` |
 
 新增 change 的工件从 `.sdlc/templates/<stage>.md` 复制（plan / design / build / test / deploy / maintain 六个模板都在 `Tools/claude-sdlc/` 之外的 `.sdlc/templates/`）。
 

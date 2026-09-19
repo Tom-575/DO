@@ -2,27 +2,22 @@
 description: 任何代码或产品变更开始前必须先走 SDLC 流程；收工前必须留下 .sdlc 变更工件
 alwaysApply: true
 enabled: true
-updatedAt: 2026-09-16T00:00:00.000Z
+updatedAt: 2026-09-19T00:00:00.000Z
 ---
 
-# 流程门禁（SDLC）
+# 流程门禁（SDLC）——任何变更都不得绕过
 
 本项目用 `.sdlc/` 走 **Plan → Design → Build → Test → Deploy → Maintain** 六阶段。这是一道**门禁**，不是参考资料。
 
-## 开工前（缺一不可）
+<!-- gate-rules:start -->
+**铁律（逐条强制）**
 
-1. 读 `.sdlc/INDEX.md` 与 `.sdlc/lifecycle.yaml`，确认已到达的 gate 与活跃 change。
-2. 读 `.zcode/skills/ai-sdlc-navigator/SKILL.md`，**手动按其步骤执行**——本运行时不自动加载 `.zcode/skills/`。`.codebuddy/skills/` 下有两个薄封装可直接调用：`ai-sdlc-navigator`、`code-review`。
-3. 在 `docs/TODO.md` 认领任务编号，不要凭印象开工。
+1. 开工前先读 `.sdlc/INDEX.md` 与 `.sdlc/lifecycle.yaml`，确认已达 gate 与活跃 change；再在 `docs/TODO.md` **认领任务编号**，不凭印象开工。
+2. 任何变更都要在 `.sdlc/changes/<change-id>/` 留下**当前阶段该有的工件**；没有工件 = 这次变更**没完成**，不允许用「下次补」收尾。
+3. 收工前：提交信息带 change 名；工件非空（验收表有行、证据链接有目标）。
+4. 豁免：确有理由时，在 `docs/TODO.md` 对应任务下写**豁免理由 + 已落地的补录去向**；指向尚未落地的东西不算去向。
 
-## 收工前
+**工具怎么用**：gate 词表、状态推进命令、每阶段必需工件、装工具箱，全部在 `.sdlc/RUNBOOK.md`——本文不复述。
+<!-- gate-rules:end -->
 
-- `.sdlc/changes/<change-id>/` 必须存在，且**当前阶段该有的工件非空**：验收表有行、证据链接有目标。
-- 没有工件 = 这次变更**没完成**。不允许以「下次补」收尾。
-- 提交信息带 change 名。
-
-## 豁免
-
-确有理由豁免时，在 `docs/TODO.md` 对应任务下写明**豁免理由 + 补录去向**。**指向尚未落地的东西不算去向**（事故复发记录见 TODO #20）。
-
-> 本段同文出现在 `AGENTS.md` 与 `CODEBUDDY.md`。改一处必须同步三处——用门禁首句「流程门禁（SDLC）」grep 即可校验。
+> 本文件与 `AGENTS.md`、`CODEBUDDY.md` 逐字同文（用 `gate-rules` 标记比对，命令见 `.sdlc/RUNBOOK.md`）。

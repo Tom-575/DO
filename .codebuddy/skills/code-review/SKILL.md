@@ -6,7 +6,7 @@ disable: false
 
 # Code Review（两轴）
 
-本技能是 `.zcode/skills/code-review/SKILL.md` 的**薄封装**；流程细节与坏味道清单以源文件为准，本文件只补 DO 项目的落地差异。
+本技能是 `Tools/claude-sdlc/skills/code-review/SKILL.md` 的**薄封装**；流程细节与坏味道清单以该源文件为准，本文件只补 DO 项目的落地差异。工具箱目录缺失时先按 `.sdlc/RUNBOOK.md` 的「装工具箱三步」补上。
 
 ## 为什么是两轴、且不合并
 
