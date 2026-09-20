@@ -41,7 +41,7 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 两个**已修**的历史坑（2026-09-19，详见第 6 节）：
 
 - **`refresh-index` 的重写范围**：现在只整段重写 `## Current State`（纯数据），Active Changes 列表只改 `<!-- changes:start -->` / `<!-- changes:end -->` 标记之间的行。**手写备注放在标记之外即可**（旧格式文件首次运行会自动补上标记）。
-- **`advance` 写入新阶段的 gate**：现在推进后新阶段一律是 `awaiting-human-review`，**不会**把上一阶段刚批准的 gate 带过去——所以每个阶段都要各自 `set-gate` 一次；`stage: maintain` + `gate: deployed-stable` 这种组合不会再出现。
+- **`advance` 写入新阶段的 gate**：现在推进后新阶段一律是 `awaiting-human-review`，**不会**把上一阶段刚批准的 gate 带过去——所以每个阶段都要各自 `set-gate` 一次；`stage: maintain` + `gate: deployed-stable` 这种组合不会再出现。同时 `advance` 要求**当前阶段**的 gate 已是该阶段的批准值，未确认就推进会被拒：`cannot advance <id>; gate must be <gate>, got awaiting-human-review`（2026-09-20 实测）。**即：没人工确认，阶段推不动。**
 
 ## 4. 每阶段必需工件（`lifecycle.yaml` 的字段名 = 工件名）
 
@@ -77,6 +77,11 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 | 2026-09-19 | `advance` 不再沿用上一阶段的 gate：推进后新阶段一律置 `awaiting-human-review`（每个阶段各自 `set-gate` 一次），避免「`stage: maintain` + `gate: deployed-stable`」这种看不出未确认的组合 | 同上 |
 | 2026-09-19 | navigator SKILL 补 **gate 词表**与 `awaiting-human-review` 的含义；`shared/artifact-contracts.md` 补**阶段↔字段名↔gate** 对照表与改名历史 | 同上 |
 | 2026-09-19 | 新增 `.sdlc/templates/daily.md`（DAILY 模板）与 `scripts/check_artifacts_nonempty.py`（工件非空校验） | 同上 |
+| 2026-09-20 | **6 个阶段 SKILL 各自写明 gate 值**（此前 `ai-sdlc-plan` 等只提「the Plan gate」，不写字符串，agent 无从得知） | 已提交工具箱 `6a7a512` |
+| 2026-09-20 | 6 个工件模板**去掉 `status:` 行**（与 `lifecycle.yaml` 双写、已见漂移）；`shared/artifact-contracts.md` 明确：`lifecycle.yaml` 是唯一记录，工具写进工件的 `status:` 只是**给人看的镜像**，任何脚本都不读它 | 同上 |
+| 2026-09-20 | `init_sdlc.py` 为 `learnings/`、`decisions/` 生成 README（空目录在 Git 里不存在，新人看不出用途） | 同上 |
+| 2026-09-20 | `update_sdlc_state.py` 内指向 `plan.md` 的局部变量 `intent` → `plan_artifact`（改名残留） | 同上 |
+| 2026-09-20 | 本机缓存清理：`.pytest_cache/`、`scripts/__pycache__/`、`tests/__pycache__/` | 可再生，无需提交 |
 | 2026-09-19 | `.sdlc/changes/record-card-export-h5/design.md` 一处假 Markdown 链接（文件名模板被当成链接目标） | 随本项目提交 |
 
 > **`add-artifact` 的正确用法**：它**生成模板**，不是「登记已有工件的路径」。工件已经写好时**不要**调用它——`lifecycle.yaml` 里的路径是 `start` / `advance` 自动填的（守卫加了之后调用只会被拒绝，不会再有损失）。
