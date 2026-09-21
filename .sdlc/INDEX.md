@@ -15,8 +15,8 @@ in their canonical artifacts.
 
 - **ui-v2-redesign**: stage `maintain`, gate `deployed-stable`, risk `medium`
 - **sdlc-toolbox-alignment**: stage `test`, gate `evidence-passed`, risk `low`
-- **v2-device-feedback**: stage `deploy`, gate `awaiting-human-review`, risk `medium`
-- **v2-usage-refinement**: stage `deploy`, gate `awaiting-human-review`, risk `medium`
+- **v2-device-feedback**: stage `deploy`, gate `deployed-stable`, risk `medium`
+- **v2-usage-refinement**: stage `deploy`, gate `deployed-stable`, risk `medium`
 
 <!-- changes:end -->
 

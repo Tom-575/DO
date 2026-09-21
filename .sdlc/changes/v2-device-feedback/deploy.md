@@ -1,6 +1,6 @@
 # Deploy: V2 真机反馈 —— 第一步页返回卡死 / 今天-痕迹横滑手势失效 / 念头卡去示例 chip
 
-status: deployed
+status: accepted
 candidate_revision: 工作区（HEAD 之后，未提交）
 source_evidence: test.md
 release_owner: tom57
@@ -57,13 +57,16 @@ updated_at: 2026-09-21
 
 ## Deployment result
 
-（推送后回填：提交号、Actions run、线上产物哈希对比。）
+- 提交 `3b974e5` 已推送 `origin/main`（`89dbaf1..3b974e5`）；`.github/workflows/deploy.yml` 触发并完成。
+- 线上冒烟（`https://tom-575.github.io/DO/`）：`index.html` 引用的产物 = `assets/index-Cmm2L0p8.js`
+  / `assets/index-B8rwtE3P.css`，与本地 `npm run build` 的产物**完全一致**。
+  升级前线上是 `index-DfyYnmoi.js`（2026-09-17 的 V2）——确认是换代，不是缓存。
 
 ## Post-deploy checks
 
 | 检查 | 结果 |
 |---|---|
-| 线上为新构建（产物哈希与本地一致） | 推送后回填 |
+| 线上为新构建（产物哈希与本地一致） | **通过**：`index-Cmm2L0p8.js` / `index-B8rwtE3P.css` |
 | 旧数据向前兼容（无 schema 变化） | 依据 test.md 的代码路径核对（无迁移） |
 
 ## 真机走查

@@ -20,9 +20,12 @@
 - **probe 顺带抓出首版脚本的 bug**：`review_section` 把段内必然出现的 `### Standards` 当成截断点，等于**对真实项目的两个 test.md 误报**——只做正向验证（跑通就算过）根本发现不了，是三态实测逼出来的。
 - **真机走查提为 Deploy 阶段必需（TODO #50）**：`deploy.md` 必须含 `## 真机走查`，且二选一——给出**目标存在**的证据链接，或明说「未做」+ 写明欠账**去向**。四期与五期各欠过一次真机走查、两次都以「待走查」三个字放行，代价是用户在真机第一天撞到 #42 / #43（两条都是**桌面断言判过**的）。从今天起**「待走查」不再是可放行状态**。`ui-v2-redesign/deploy.md` 已按事实补上该节（未做 + 阻塞转稳定 + 去向指向 `v2-device-feedback`）。四态实测：无节 → 拦 / 有证据 → 放行 / 未做无去向 → 拦 / 未做有去向 → 放行。
 - **门禁并入口 + 提交钩子（TODO #51）**：两道专属门禁（§9 review、§10 真机）与通用非空检查**并入 `validate_sdlc_state.py`**（此前两个入口容易「一个绿一个红」），`advance` 前跑一次 `validate` 即可；新增 `.githooks/pre-commit`（进版本控制）+ `.gitattributes` 钉 `eol=lf`（CRLF 会让 `#!/bin/sh` 变 `#!/bin/sh\r`，钩子直接死）。钩子跑的就是 `validate`，工具箱缺失时**跳过不拦**（`Tools/` 被 gitignore，换机器拦下来只会让人没法提交）。
+- **发布上线（方案 A）**：两个 change 的 `deploy.md` 按事实补齐（Preconditions / Rollout / Rollback / **真机走查：未做 + 阻塞 + 去向**），gate 从 `plan` 逐阶段推到 `deploy`；提交 `3b974e5` 推 `origin/main` → Actions 部署完成。**线上产物 `index-Cmm2L0p8.js` / `index-B8rwtE3P.css` 与本地构建完全一致**（升级前是 `index-DfyYnmoi.js`，2026-09-17 的 V2）。两个 change 的 gate → `deployed-stable`。
+- **真机门禁的第一次实战就修了它自己**：补 `deploy.md` 时发现门禁的逻辑漏洞——「写了未做、同时又引用了去向链接」这种**诚实交代**会被当成「已走查」（因为先查了链接）。已改成**先看它承不承认没做**，再决定要不要证据，并用 E 态 probe 复验（未做 + 链接但无去向 → 拦）。
 
 **待决策**
 
+- **真机走查**（本次上线的目的，也是两个 change 转「稳定」的阻塞项）：请在手机上打开 `https://tom-575.github.io/DO/` 验三件事——① 编辑态第一步页点返回是否一次到位；② 今天 ↔ 痕迹手指能否滑、指示是否跟手；③ 没配 AI 时点「DO」是否直接进第一步页、时长档位是否为 `5 / 15 / 自定义`、记录页「关联一个念头」是否独立成行。结论回给我，我据此把 deploy 工件的「未做」改成「已做」或回炉。
 - **提交钩子需要你手动启用一次**：`git config core.hooksPath .githooks`（Git 配置不进版本控制，agent 不得代改）。不启用则钩子不生效，门禁退回「靠人记得跑」。
 - 两个 change 的 gate 放行（`v2-device-feedback` / `v2-usage-refinement`）仍未批。
 - `snapToOption`（AI 时长吸附到最近档位）仍是假设：若用户想「恒定 5 分钟」，改一处即可。

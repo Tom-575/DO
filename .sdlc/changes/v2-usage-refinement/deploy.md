@@ -1,6 +1,6 @@
 # Deploy: V2 使用细化 —— 入口改「DO」且无 AI 直跳 / 关联念头提升 / 时长档位 5-15-自定义
 
-status: deployed
+status: accepted
 candidate_revision: 工作区（HEAD 之后，未提交）
 source_evidence: test.md
 release_owner: tom57
@@ -56,13 +56,16 @@ updated_at: 2026-09-21
 
 ## Deployment result
 
-（推送后回填：提交号、Actions run、线上产物哈希对比。）
+- 提交 `3b974e5` 已推送 `origin/main`（`89dbaf1..3b974e5`）；`.github/workflows/deploy.yml` 触发并完成。
+- 线上冒烟（`https://tom-575.github.io/DO/`）：`index.html` 引用的产物 = `assets/index-Cmm2L0p8.js`
+  / `assets/index-B8rwtE3P.css`，与本地 `npm run build` 的产物**完全一致**。
+  升级前线上是 `index-DfyYnmoi.js`（2026-09-17 的 V2）——确认是换代，不是缓存。
 
 ## Post-deploy checks
 
 | 检查 | 结果 |
 |---|---|
-| 线上为新构建（产物哈希与本地一致） | 推送后回填 |
+| 线上为新构建（产物哈希与本地一致） | **通过**：`index-Cmm2L0p8.js` / `index-B8rwtE3P.css` |
 | 旧数据向前兼容（无 schema 变化） | 依据 test.md 的代码路径核对（无迁移） |
 | 老用户不被出发页拦下（`onboarded` 缺省归一为 true） | 依据 test.md 的代码路径核对 |
 
