@@ -1,0 +1,29 @@
+#!/bin/sh
+# DO 项目提交前门禁（`.sdlc/RUNBOOK.md` §9/§10 的落地）。
+#
+# 启用一次（每个克隆各做一次——Git 配置不进版本控制，所以只能由人执行）：
+#   git config core.hooksPath .githooks
+#
+# 校验内容 `validate_sdlc_state.py`：工件存在 / 阶段 status 合法 / revision 能在 git 找到 /
+# 相对链接有目标 / INDEX 的 change 计数一致，外加两道专属门禁——
+#   ① Test：`test.md` 必须有两轴 code review（§9）
+#   ② Deploy：`deploy.md` 必须交代真机走查（有证据，或明说没做 + 欠账去向）（§10）
+#
+# 工具箱缺失时**跳过并提示**、不拦提交：`Tools/` 被 gitignore，换机器时它本来就不在，
+# 拦下来只会让人没法提交（见 §1 的「装工具箱三步」）。
+set -e
+root="$(git rev-parse --show-toplevel)"
+validator="$root/Tools/claude-sdlc/scripts/validate_sdlc_state.py"
+
+if [ ! -f "$validator" ]; then
+  echo "[pre-commit] 工具箱不在（$validator）——跳过 SDLC 门禁。" >&2
+  echo "[pre-commit] 按 .sdlc/RUNBOOK.md §1 装好后自动生效；本次提交未校验。" >&2
+  exit 0
+fi
+
+cd "$root"
+if ! python "$validator" .; then
+  echo "[pre-commit] SDLC 门禁未通过，提交已拦下。" >&2
+  echo "[pre-commit] 修完再提交；确需绕过用 git commit --no-verify，并在 .sdlc/DAILY.md 写清理由。" >&2
+  exit 1
+fi

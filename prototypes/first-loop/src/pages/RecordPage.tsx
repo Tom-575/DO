@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { CaretLeft, Camera, Check, Clock, Link as LinkIcon, Sparkle, X } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, Camera, Check, Clock, Link as LinkIcon, Sparkle, X } from '@phosphor-icons/react';
 import { useAppState, useDispatch } from '../store/store';
 import { refineRecord } from '../lib/ai';
 import { clearRecordDraft, loadRecordDraft, saveRecordDraft } from '../lib/storage';
@@ -282,11 +282,31 @@ export default function RecordPage() {
           <Sparkle size={15} />
           {refining ? '整理中…' : hasRefined ? '重新整理' : '帮我整理'}
         </button>
-        <button className="chip record-chip" onClick={() => setPickerOpen((open) => !open)} aria-expanded={pickerOpen}>
-          <LinkIcon size={15} />
-          {selected ? selected.thought : '关联一个念头'}
-        </button>
       </div>
+
+      {/* 关联从工具行里拿出来单独成行（#47）：它是这一页唯一带语义的动作（决定记录归属哪个 DO、
+          联动 DO 状态），和「加照片 / 记录时间 / 帮我整理」并排时优先级最低，关联后的念头还会被挤成省略号 */}
+      <button className={`record-link${selected ? ' linked' : ''}`} aria-expanded={pickerOpen} onClick={() => setPickerOpen((open) => !open)}>
+        <LinkIcon size={15} />
+        <span>{selected ? selected.thought : '关联一个念头'}</span>
+        <CaretRight size={14} weight="bold" />
+      </button>
+
+      {/* 候选列表紧跟入口就地展开：此前它挂在页面最底部，点开关联后还得往下找 */}
+      {pickerOpen && <motion.div className="card record-picker" {...riseIn(reduceMotion, 0, 20)}>
+        {linkCandidates.length === 0 && <p className="record-note">还没有可以关联的 DO。</p>}
+        {linkCandidates.map((item, index) => <motion.button
+          key={item.id}
+          className={`record-picker-row${item.id === linkedId ? ' selected' : ''}`}
+          whileTap={reduceMotion ? undefined : { scale: PRESS_SCALE, transition: SPRING_TAP }}
+          {...popIn(reduceMotion, stagger(index, 0.05, 5), 16, 0.88)}
+          onClick={() => (item.id === linkedId ? unlink() : setLinkedId(item.id))}
+        >
+          <span>{item.thought}</span>
+          {item.id === linkedId && <Check size={15} weight="bold" />}
+        </motion.button>)}
+        {selected && <button className="text-action record-picker-clear" onClick={unlink}>不关联</button>}
+      </motion.div>}
       {refineFailed && <motion.p className="record-note" {...popIn(reduceMotion)}>整理没成功，稍后再试。</motion.p>}
 
       {images.length > 0 && <div className="record-images">
@@ -306,20 +326,6 @@ export default function RecordPage() {
         <p className="record-note">可以直接改，原话仍会保留。</p>
       </motion.section>}
 
-      {pickerOpen && <motion.div className="card record-picker" {...riseIn(reduceMotion, 0, 20)}>
-        {linkCandidates.length === 0 && <p className="record-note">还没有可以关联的 DO。</p>}
-        {linkCandidates.map((item, index) => <motion.button
-          key={item.id}
-          className={`record-picker-row${item.id === linkedId ? ' selected' : ''}`}
-          whileTap={reduceMotion ? undefined : { scale: PRESS_SCALE, transition: SPRING_TAP }}
-          {...popIn(reduceMotion, stagger(index, 0.05, 5), 16, 0.88)}
-          onClick={() => (item.id === linkedId ? unlink() : setLinkedId(item.id))}
-        >
-          <span>{item.thought}</span>
-          {item.id === linkedId && <Check size={15} weight="bold" />}
-        </motion.button>)}
-        {selected && <button className="text-action record-picker-clear" onClick={unlink}>不关联</button>}
-      </motion.div>}
     </div>
 
     <motion.div className="bottom-actions" {...riseIn(reduceMotion, 0.12, 30)}>

@@ -38,6 +38,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py refresh-index
 python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 ```
 
+> **每次 `advance` 之前先跑 `validate_sdlc_state.py .`** —— 它已经含通用非空检查与两道专属门禁
+> （Test 的两轴 code review §9、Deploy 的真机走查交代 §10）。推进 gate 却不跑校验，
+> 等于门禁不存在。`.githooks/pre-commit`（§10 末）会在提交时再拦一道。
+
 两个**已修**的历史坑（2026-09-19，详见第 6 节）：
 
 - **`refresh-index` 的重写范围**：现在只整段重写 `## Current State`（纯数据），Active Changes 列表只改 `<!-- changes:start -->` / `<!-- changes:end -->` 标记之间的行。**手写备注放在标记之外即可**（旧格式文件首次运行会自动补上标记）。
@@ -54,6 +58,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 | deploy | + `deploy` | + `deploy.md` |
 | maintain | `maintain` | `maintain.md` |
 
+**Test 阶段的额外要求**（2026-09-21 起，用户裁决「改成必须」）：`test.md` 必须含一节两轴 code review
+（`## Code review`，段内 `Standards` 与 `Spec` 都要出现）；纯流程 / 文档 change 可走窄豁免。
+规则全文与豁免条件见 **§9**，机械校验由 `check_artifacts_nonempty.py` 覆盖。
+
 **字段名历史**：旧名 `intent / change / evidence / release / learning` 已于 2026-09-19 由工具箱统一改名；见到旧名按本表换算。
 
 `validate_sdlc_state.py` 会检查：工件存在、`status:` 取值合法、`revision:` 能在 git 里找到、`.sdlc/**/*.md` 的相对链接有目标、`INDEX.md` 的 Active changes 计数与 `lifecycle.yaml` 一致。
@@ -64,7 +72,21 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 
 **机械校验**（2026-09-19 新增，本机）：`python Tools/claude-sdlc/scripts/check_artifacts_nonempty.py .`
 它检查每个活跃 change **当前阶段**的工件：无模板占位符（`<change name>` / `TBD` / `（待填）` 等）、表格有数据行；`test` / `deploy` / `maintain` 阶段还要求至少一条**目标存在**的证据链接。
-通过时输出 `artifacts are gate-ready (N active change(s) checked)`；未接入 `validate`，属按需运行。
+通过时输出 `artifacts are gate-ready (N active change(s) checked)`。
+
+**已并入 `validate`（2026-09-21）**：`validate_sdlc_state.py` 现在 `import` 这个脚本的检查函数，
+所以 `python Tools/claude-sdlc/scripts/validate_sdlc_state.py .` 一处就能跑完
+通用非空检查 + 下面两道专属门禁（`.githooks/pre-commit` 也走它）。两个入口容易「一个绿一个红」，
+所以只留一个。
+
+两道**专属门禁**（都是 2026-09-21 用户要求「改成必须」的）：
+
+- **Test 的两轴 code review**（§9）：登记了 `test` 工件的 change，其 `test.md` 必须含 `## Code review`
+  一节且两轴关键词齐，或走「不适用 + 改动清单」窄豁免。
+- **Deploy 的真机走查交代**（§10）：登记了 `deploy` 工件的 change，其 `deploy.md` 必须含
+  `## 真机走查` 一节，且**要么**给出目标存在的证据链接、**要么**明说「未做」并写明欠账去向。
+
+两条都**不等到 `stage == <阶段>` 才查**：提前写好的工件也受同一把尺子管。
 
 ## 6. 本机改动与去向（换机器会丢，故在此留档）
 
@@ -83,6 +105,10 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 | 2026-09-20 | `update_sdlc_state.py` 内指向 `plan.md` 的局部变量 `intent` → `plan_artifact`（改名残留） | 同上 |
 | 2026-09-20 | 本机缓存清理：`.pytest_cache/`、`scripts/__pycache__/`、`tests/__pycache__/` | 可再生，无需提交 |
 | 2026-09-19 | `.sdlc/changes/record-card-export-h5/design.md` 一处假 Markdown 链接（文件名模板被当成链接目标） | 随本项目提交 |
+| 2026-09-21 | 两道专属门禁（code review / 真机走查）**并入 `validate_sdlc_state.py`**（`import check_artifacts_nonempty`）：此前是两个入口，容易「一个绿一个红」；现在 `validate` 一处跑完，`advance` 前跑它即可 | 同上 |
+| 2026-09-21 | 新增 `.githooks/pre-commit`（进版本控制）+ `.gitattributes` 钉住 `.githooks/* eol=lf`。**启用需人工执行一次** `git config core.hooksPath .githooks`（Git 配置不进版本控制，agent 不得代改）。工具箱缺失时**跳过不拦**——`Tools/` 被 gitignore，换机器拦下来只会让人没法提交 | 随本项目提交；用法见 §10 末 |
+| 2026-09-21 | `deploy.md` 真机走查门禁（`## 真机走查` 一节：有证据链接，或「未做 + 去向」），配套把 `ui-v2-redesign/deploy.md` 按事实补上该节 | 同上；规则见 §10 |
+| 2026-09-21 | `check_artifacts_nonempty.py` 新增 **Test 阶段 code review 门禁**：登记了 `test` 工件的 change，其 `test.md` 必须含 `## Code review` 一节且段内 `Standards` / `Spec` 两轴齐全；纯流程 / 文档 change 可用「不适用 + 改动清单（≥60 字符）」窄豁免。**首版把段内的 `### Standards` 误当成截断点**（等于对真实项目误报），靠临时 probe 的 A/B/C 三态实测才发现并修 | 本机工具箱、无 remote → **本表即去向**；规则见 §9 |
 
 > **`add-artifact` 的正确用法**：它**生成模板**，不是「登记已有工件的路径」。工件已经写好时**不要**调用它——`lifecycle.yaml` 里的路径是 `start` / `advance` 自动填的（守卫加了之后调用只会被拒绝，不会再有损失）。
 
@@ -113,3 +139,63 @@ PY
 ## 8. 每日运行日志
 
 见 `.sdlc/DAILY.md`：每轮会话结束追加一节，**凡写 passed 必挂证据链接**；「待决策」为空 = 当日无需人工动作。
+
+## 9. Test 阶段的 code review 门禁（2026-09-21 起必须）
+
+`code-review` 技能此前**没有触发点**——没有 hook、没有 CI、没有提交钩子，全靠人记得跑。
+2026-09-21 用户裁决：**改成必须**。落地形态如下。
+
+**硬要求**：`test.md` 里必须有一节 `## Code review`，且该节内**两轴（`Standards` / `Spec`）都要出现**。
+两轴由**两个并行子代理**分别跑、**分开报告、不合并**（一轴过不能替另一轴背书）；
+结论必须经作者逐条到代码复核，并在同一节里写明：**剔除的误报**、**未动的 judgement 项及理由**。
+
+**固定点**：改动尚未提交时 = 当前 `HEAD`，被评审对象 = **工作区**
+（`git diff HEAD` 导出成文件交给子代理——子代理跑不了 git；另附**未跟踪的新文件清单**）。
+Spec 来源按 `code-review` 技能：本项目的 change `plan.md` / `design.md` / `docs/TODO.md` 条目 / `DESIGN.md` §2–§5。
+
+**窄豁免**：当且仅当改动里**没有任何产品代码**（纯流程 / 文档 / 工具箱）时可写「不适用」，但必须：
+
+1. 列出**改动清单**（改了什么、落在哪些目录）；
+2. 说明用什么**替代方式**验证；
+3. 整节不少于 60 字符（否则机械校验判为「太薄」）。
+
+**机械校验**：`python Tools/claude-sdlc/scripts/check_artifacts_nonempty.py .`
+对**每一个登记了 `test` 工件的活跃 change** 检查（不等到 `stage == test`），
+所以提前写好的 `test.md` 也受同一把尺子管。不通过时 exit 1 并打印缺什么。
+
+**为什么放进 `test.md` 而不是新增工件**：六阶段工件表不增加文件；评审是 Test 阶段的一部分，
+不是额外产物——这正是 `changes/v2-usage-refinement/test.md` 与 `v2-device-feedback/test.md` 现在的写法。
+
+## 10. 真机走查的证据门禁（2026-09-21 起必须）
+
+**为什么加**：四期（#23–#32）与五期（V2）**各欠过一次**真机走查，两次都以「待走查」三个字挂在
+`maintain.md` 的 Follow-up 里放行。代价是可量化的：用户在真机上第一天就撞到两个**桌面断言判过**的问题
+（#42 第一步页返回卡死、#43 今天-痕迹横滑失效）。**「待走查」不是一个可以被放行的状态。**
+
+**硬要求**：登记了 `deploy` 工件的 change，其 `deploy.md` 必须含一节 `## 真机走查`
+（标题里出现「真机」或「真设备」即可），且这一节**二选一**：
+
+1. **已走查**：给出**至少一条目标存在**的证据链接（截图 / 记录 / 日志），并写明设备与系统；
+2. **未走查**：明说「未做 / 未测 / 未走查 / 待走查 / 阻塞」中的任一词，**且写明「去向」**
+   （欠账记在哪个文件 / 哪个任务编号）——指向尚未落地的东西不算去向（与铁律 4 同一口径）。
+
+两种都不满足 → 拦下：既不引证据、也不承认没做，拦；承认没做但不写去向，也拦。
+
+**为什么是「二选一」而不是「必须做过」**：真机有时确实拿不到（本项目当前就没有可用的真机环境）。
+机械校验能保证的只有「写清楚」，所以它不假装能保证「做过」；把「没做」变成一个**必须被记账**的状态，
+已经比「待走查」强得多。
+
+**机械校验**：随 §9 一起并入 `validate_sdlc_state.py`（见 §5）。
+
+### 提交钩子：把门禁从「记得跑」变成「跑不了就交不上去」
+
+```bash
+git config core.hooksPath .githooks      # 每个克隆执行一次；Git 配置不进版本控制
+```
+
+- 钩子 `.githooks/pre-commit` **进版本控制**；`.gitattributes` 钉了 `.githooks/* eol=lf`
+  —— CRLF 会让 `#!/bin/sh` 变成 `#!/bin/sh\r`，钩子直接死掉；
+- 它跑的就是 `validate_sdlc_state.py`（含上面两道门禁）；
+- **工具箱缺失时跳过并提示、不拦提交**：`Tools/` 被 gitignore，换机器时它本来就不在，
+  拦下来只会让人没法提交；装好后（§1）自动生效；
+- 绕过用 `git commit --no-verify`，但**绕过就要在 DAILY 里写理由**（与铁律 4 同源）。

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { motion, useReducedMotion, type MotionValue } from 'motion/react';
 import { ArrowRight } from '@phosphor-icons/react';
 import { selectHomeQueue, useAppState, useDispatch } from '../store/store';
+import { isAIConfigured } from '../lib/ai';
 import { formatKicker } from '../lib/date';
 import { memoryDayLabel } from '../lib/memories-date';
 import { formatDuration, parseMinutes } from '../lib/duration';
@@ -14,9 +15,6 @@ import type { DO } from '../types';
 import AppearanceButton from '../components/AppearanceButton';
 import PreviousRow from '../components/PreviousRow';
 import './today.css';
-
-/** 黑卡里的三个示例念头：点一下即填入，不给用户「想不出写什么」这道坎 */
-const EXAMPLE_IDEAS = ['跑步 10 分钟', '做一顿饭', '拍一张照片'];
 
 interface TodayPageProps {
   /**
@@ -31,7 +29,7 @@ interface TodayPageProps {
  * 念头存在 store.idea（与对话规划页同一份），切页不丢。
  */
 export default function TodayPage({ titleLag }: TodayPageProps) {
-  const { dos, records, idea, historyOpen } = useAppState();
+  const { dos, records, idea, historyOpen, settings } = useAppState();
   const dispatch = useDispatch();
   const reduceMotion = useReducedMotion();
   // 回收在渲染时按 now 计算，每分钟校准一次，跨过回收线的 DO 会自动下沉
@@ -57,10 +55,12 @@ export default function TodayPage({ titleLag }: TodayPageProps) {
   const ideaOf = (linkedDOId?: string) => dos.find((item) => item.id === linkedDOId)?.thought;
 
   const goPlan = (event: MouseEvent<HTMLButtonElement>) => {
-    // 输入页从这个胶囊「长」出来：原点必须在卸载前同步量下
+    // 新屏幕从这颗按钮「长」出来：两种去向共用同一个原点，量取必须在卸载前同步完成
     captureExpandOrigin(event.currentTarget);
     dispatch({ type: 'setActiveDO', id: null });
-    dispatch({ type: 'setScreen', screen: 'input' });
+    // 没配 AI 时对话页只会跑 mock 的关键词提问（"想在哪儿动一动？"），价值低还多一步：
+    // 直接进第一步页（#46）。行动仍由 lib/mock 的关键词模板生成，与对话落定后同一个函数。
+    dispatch({ type: 'setScreen', screen: isAIConfigured(settings) ? 'input' : 'action' });
   };
 
   const openAction = (event: MouseEvent<HTMLButtonElement>, item: DO) => {
@@ -95,22 +95,16 @@ export default function TodayPage({ titleLag }: TodayPageProps) {
             growTextarea(event.target, 96);
           }}
         />
-        <div className="idea-chips">
-          {EXAMPLE_IDEAS.map((text) => <button
-            key={text}
-            className={`chip${idea === text ? ' selected' : ''}`}
-            onClick={() => dispatch({ type: 'setIdea', idea: text })}
-          >{text}</button>)}
-        </div>
+        {/* 不给示例 chip（2026-09-19 用户决定）：推荐词会把「模糊的念头」收窄成三个固定答案 */}
         {/* 念头为空时不做「灰掉的按钮」（那会读成这个按钮坏了）：保持蜜桃色，点了把光标送进输入框 */}
-        <button className="pill pill-peach idea-go" onClick={(event) => {
+        <button className="pill pill-peach idea-go" aria-label="交给 DO，找到第一步" onClick={(event) => {
           if (!idea.trim()) {
             ideaRef.current?.focus();
             return;
           }
           goPlan(event);
         }}>
-          帮我找到第一步
+          DO
           <ArrowRight size={17} weight="bold" />
         </button>
       </motion.section>

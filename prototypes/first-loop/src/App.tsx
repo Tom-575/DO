@@ -36,6 +36,8 @@ export default function App() {
   const pageWidthRef = useRef(0);
   /** 程序化滚动守卫的截止时间戳;在此之前不做落点判定 */
   const guardedUntil = useRef(0);
+  /** 这次 tab 变化是否由手势(拖拽 / 惯性)驱动:是则只让状态跟上,绝不介入滚动位置 */
+  const tabFromGesture = useRef(false);
   /** 上一次滚动位置:用来算每次事件的位移量(喂养标题的惯性甩出) */
   const lastScrollLeft = useRef(0);
   /** 大标题的横向惯性甩出:静止永远在原位,只有动的时候才甩 */
@@ -51,13 +53,22 @@ export default function App() {
       ? {}
       : { backgroundImage: builtinBackground ?? `linear-gradient(var(--backdrop),var(--backdrop)),url(${background})` };
 
-  // tab 状态 → 分页位置:点 Tab、保存记录后跳痕迹页都走这里;首次挂载直接落位,不闪一下
+  // tab 状态 → 分页位置:点 Tab、保存记录后跳痕迹页都走这里;首次挂载直接落位,不闪一下。
+  // 手势驱动的 tab 变化只对账、不动滚动位置——拖拽期间调用程序化滚动会打断触摸滚动,
+  // 真机上就是「滑一下就弹回」(#43)。
   useEffect(() => {
+    const fromGesture = tabFromGesture.current;
+    tabFromGesture.current = false; // 先消费,任何早退分支都不会把标记留到下一次
     const pager = pagerRef.current;
     if (!pager) return;
     const firstForThisNode = positionedNode.current !== pager;
     positionedNode.current = pager;
     pageWidthRef.current = pager.clientWidth;
+    if (fromGesture) {
+      // 位置正由手指推进:状态跟上就够了,位置交给滚动本身
+      lastScrollLeft.current = pager.scrollLeft;
+      return;
+    }
     const left = tabIndex * pager.clientWidth;
     if (Math.abs(pager.scrollLeft - left) < 2) return;
     // 位移基准要先对齐到起点,否则程序化滚动发出的第一个事件会被算成一次巨大位移
@@ -98,7 +109,11 @@ export default function App() {
     if (Date.now() < guardedUntil.current) return;
     const landed = Math.round(x / width);
     const nextTab = TABS[Math.max(0, Math.min(TABS.length - 1, landed))];
-    if (nextTab !== tabRef.current) dispatch({ type: 'setTab', tab: nextTab });
+    if (nextTab !== tabRef.current) {
+      // 打上「这次是手势引起的」:状态跟手,位置继续交给手指
+      tabFromGesture.current = true;
+      dispatch({ type: 'setTab', tab: nextTab });
+    }
   };
 
   return <div className={`prototype-frame theme-${theme}`}>

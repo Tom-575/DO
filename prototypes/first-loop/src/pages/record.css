@@ -196,6 +196,53 @@
   line-height: 1.62;
 }
 
+/* ---------- 关联入口：独立一行（#47，不再是工具行里的一颗 chip） ---------- */
+
+.record-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--secondary);
+  font-size: 14px;
+  text-align: left;
+  transition: border-color 0.18s ease, transform 0.15s ease;
+}
+.record-link span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.record-link svg:last-child {
+  flex: none;
+  color: var(--tertiary);
+  transition: transform 0.18s ease;
+}
+/* 按下反馈取 §5.3 区间（0.84–0.96）的上界：0.99 太轻，等于没有反馈 */
+.record-link:active {
+  transform: scale(0.96);
+}
+/* §5.3：inset 行按下时箭头随之右移 2px（此前只有 transition 没有变换，那行是死代码） */
+.record-link:active svg:last-child {
+  transform: translateX(2px);
+}
+/* 已关联：念头原文当正文用，陶土色图标把它和上面那排工具 chip 彻底分层 */
+.record-link.linked {
+  border-color: transparent;
+  background: var(--field);
+  color: var(--text);
+}
+.record-link.linked svg:first-child {
+  color: var(--terracotta);
+}
+
 /* ---------- 关联选择器 ---------- */
 
 .record-picker {

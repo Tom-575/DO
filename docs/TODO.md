@@ -83,7 +83,7 @@
 用户又定 ④ **底部不放「我的」**——今天页右上头像已是入口,导航落为三槽(今天 / 开始 / 痕迹)。
 最后一条 ① **行动页出口** 也定了:**方案 C = 保留三选、不复刻「换一个建议」**。四处冲突已全部裁决,工件已回写(DESIGN §2.1/§3/§4、plan.md、build.md、test.md)。
 
-## 六期(2026-09-19 立项,范围:V2 真机反馈)
+## 六期(2026-09-19 立项,范围:V2 真机反馈 + 入口/时长细化)
 
 > 五期 V2 的 test 只覆盖到桌面 Chromium 模拟视口，「真机走查」一直挂在 maintain 的 Follow-up 里没做；用户真机上手后报出 1 个阻断 + 2 处体验问题 + 1 项待讨论的改版。六期先修阻断，再收表达；卡片改版单独讨论后再动手。多窗口认领规则同一期。
 
@@ -91,6 +91,9 @@
 - [ ] **#43 今天 / 痕迹横滑手势失效** — 手指左右滑不动(指示胶囊与程序化滚动都正常)。根因：App 里 `tab → 分页位置` 的 effect 在「越过中点立刻翻」时会 `pager.scrollTo({behavior:'smooth'})`，而这次 tab 变化正是**用户手势**触发的；触摸拖拽期间调用程序化滚动会打断/取消原生触摸滚动，表现为「滑一下就弹回」。四期 `interaction-motion-h5/test.md` 的 Untested 第一条已点名「真触摸串(pointerdown→move→up 的 scroll-snap 拖拽)未覆盖」，当时只用 `scrollLeft=430` 验证了吸附。修法：分清 tab 变化的来源(手势 / 点 Tab)，手势驱动的那一次只让状态跟上、绝不介入滚动位置。
 - [ ] **#44 念头卡去掉示例 chip** — 首页「一个模糊的念头」卡里的三个推荐示例(跑步 10 分钟 / 做一顿饭 / 拍一张照片)去掉，只留输入框与「帮我找到第一步」。理由(用户 2026-09-19)：推荐词把「模糊的念头」收窄成三个固定答案，与「写一句就行」相抵。连带删 `EXAMPLE_IDEAS`、`.idea-chips` 样式，DESIGN §3 同步。
 - [ ] **#45 痕迹导出卡片改版(待讨论，本轮不动手)** — 用户 2026-09-19：「痕迹导出的卡片可能要重新设计一下样式或者模板」，并明确「最后做，卡片设计到时候再讨论」。**动手前先开一轮讨论并落 `CONTEXT.md` / `DESIGN.md`**；待讨论维度见 change `v2-device-feedback` 的 plan.md「Open decisions」。
+- [ ] **#46 入口改名「DO」+ 无 AI 时不走对话**(2026-09-20)— ① 首页黑卡按钮「帮我找到第一步」改为「DO」(箭头保留);② `isAIConfigured` 为假(baseURL / model / apiKey 缺一即视为未配置)时,点它**不进对话页**,直接把念头带进第一步页——没配 AI 时对话页只会走 mock 的关键词提问,价值低,少一步更贴合「一步原则」。判据:无 AI 配置下点 DO 直达第一步页且从不出现 `.input-page`;配了 AI 仍走对话。
+- [ ] **#47 记录页「关联一个念头」提升为独立一行**(2026-09-20)— 现在它与「加一张照片 / 记录时间 / 帮我整理」并排、同为 12px chip,优先级最低;关联后念头原文塞进 chip 还会被挤。改为从工具行挪出、独立成一行可点区域:未关联显示「关联一个念头 →」,已关联显示念头原文 + 可换/可解除;展开的候选列表(.record-picker)不变。DESIGN §4 同步。
+- [ ] **#48 时长档位改 5 / 15 / 自定义,且不展示 AI 建议值**(2026-09-20)— ① `DURATION_OPTIONS` 由 [10,30,60] 改为 [5,15],第三档「自定义」就地展开数字输入(1–90);② `durationUnit` / `durationFigure` 统一按分钟显示,不再出现 `1.25 HR` 这类半格;③ **AI 的建议时长不作独立档位**,而是**吸附到最近档位**(10 → 15;距离相同时取大),避免「大字写着 10、两颗胶囊都不亮」;④ 用户手动调过之后 `action.time` 按用户值写回,AI 原话里的时长只在行动正文中保留。
 
 ## SDLC 流程修复(2026-09-17 立项)
 
@@ -102,10 +105,14 @@
   - **0ef2d57 html-to-image 挂起**:根因未诊断(嵌入式 webview 下为何挂起——跨域图片 promise 不 resolve?),短期防复发 = 契约写死「导出一律 canvas 手绘,禁用 DOM 截图库」,未来重引入截图前必须先诊断
   - **2b6f391 FileList 静默失败**:根因已知(异步处理器读实时引用被释放);防复发 = 契约加「事件对象必须在处理器内同步快照」+ 多图上传列入走查清单
   - **流程事故**:三期 #16-#18 零 SDLC 工件直接执行;根因 = skill 未介入也无兜底;防复发 = #21 日报约定 + #22 非空约束,并在三期任务旁注明豁免/补录方式
+  - **评审无触发点**:`code-review` 技能装好了却没有任何触发点(hook / CI / 提交钩子都没有),#42–#48 两轮改动都漏跑,是用户问起「是否有自动做 code-review」才补;防复发 = **#49**(RUNBOOK §9 硬要求 + `check_artifacts_nonempty.py` 机械校验),已落地
 - [x] **#21 建立运行日志 DAILY.md**（2026-09-19 完成，change `sdlc-toolbox-alignment`）— 已落 `.sdlc/DAILY.md`（铁律 + 模板 + 当日记录）、`.sdlc/RUNBOOK.md` §8 指向它、`INDEX.md` Entry Points 挂入口、`AGENTS.md` 加一句约定「每轮会话结束前追加一节」。
 - [ ] **#41 SDLC 工具链对齐**（2026-09-19 立项，change `sdlc-toolbox-alignment`）— 已完成的部分见该 change 的 build/test；**剩下的都是工具箱行为改动，需单独评估上游语义**：① gate 词表写进 SKILL（现在只活在脚本字典里，实测传错即拒）；② 加「等待人工」状态（词表里没有，只能沿用旧 gate）；③ `advance` 不沿用上一阶段的 gate；④ `refresh-index` 只重写 `<!-- generated -->` 标记内（现在会覆盖 INDEX 手写段）；⑤ DAILY 模板进工具箱 + navigator 约定；⑥ 工件非空校验脚本（对应 #22 的机械校验，目前只有 RUNBOOK §5 的文字规则）；⑥b `add-artifact` 覆盖已存在工件的问题**已在本机修**（加守卫，见 `.sdlc/RUNBOOK.md` §6）——该项已完成；⑦ `.sdlc/learnings/`、`.sdlc/decisions/` 空目录去留；⑧ 模板去掉 `status:`（消除与 lifecycle.yaml 双写漂移，本轮已见实例）；⑨ 同文 hash 校验可做成 pre-commit。
   来源清单与证据：`CLAUDE_SDLC_TODO.md`——**该文件是 SDLC 优化的长期台账**（用户 2026-09-19 指定单独保留，专门用于优化 SDLC），本条目与其同步维护。
   **2026-09-19 进度**：① 词表已进 navigator（6 个阶段 SKILL 待办）②「等待人工」已文档化 ③ `advance` 已改 ④ `refresh-index` 已改标记内重写 ⑤ DAILY 模板 ✅ ⑥ 非空校验脚本 ✅（`check_artifacts_nonempty.py`）；⑦⑧ 未动；⑨ 保持手动。详见该台账的 A 段。
+- [x] **#49 code review 提为 Test 阶段必需**（2026-09-21 完成）— 用户裁决「改成必须」。三处落点：`.sdlc/RUNBOOK.md` **§9**（硬要求：`test.md` 必须含 `## Code review` 且两轴关键词齐；固定点与「两轴不合并」；纯流程 change 的窄豁免要列改动清单且 ≥60 字符）+ `check_artifacts_nonempty.py` **新增机械校验**（凡是登记了 `test` 工件的 change 一律查，不等到 `stage == test`，提前写的也受同一把尺）+ `AGENTS.md` 铁律段外一句。三个既有 `test.md` 已按新尺补齐：`v2-usage-refinement`（补写两轴结论）、`v2-device-feedback`（评审结论提升为独立节）、`sdlc-toolbox-alignment`（窄豁免：改动全在流程/工具层，`git log --name-only 192c8a4..HEAD` 核实无 `prototypes/` 改动 + 六项改动清单 + 替代验证说明）。门禁 A/B/C 三态实测见 `.sdlc/DAILY.md` 2026-09-21。
+- [x] **#50 真机走查提为 Deploy 阶段必需证据**（2026-09-21 完成）— 四期与五期各欠过一次真机走查、都以「待走查」放行，代价是用户在真机第一天撞到 #42/#43。落地：`deploy.md` 必须含 `## 真机走查` 一节且**二选一**——给出目标存在的证据链接，或明说「未做」并写明欠账去向（指向未落地的东西不算去向）；随 §9 一起并入 `validate_sdlc_state.py`；`ui-v2-redesign/deploy.md` 已按事实补上该节（未做 + 阻塞转稳定 + 去向指向 `v2-device-feedback`）。规则见 `.sdlc/RUNBOOK.md` §10，四态实测见 `.sdlc/DAILY.md` 2026-09-21。
+- [x] **#51 门禁并入口 + 提交钩子**（2026-09-21 完成）— ① 两道专属门禁（review / 真机）与通用非空检查**并入 `validate_sdlc_state.py`**（`import check_artifacts_nonempty`），`advance` 前跑一次 `validate` 即可，不再有两个入口「一个绿一个红」；② 新增 `.githooks/pre-commit`（进版本控制）+ `.gitattributes` 钉 `eol=lf`，**启用需人工执行一次** `git config core.hooksPath .githooks`（agent 不得改 Git 配置）；工具箱缺失时跳过不拦。用法见 `.sdlc/RUNBOOK.md` §10 末。
 - [ ] **#22 gate 证据非空约束** — .sdlc/INDEX.md「Active Constraints」加一条:gate 放行前该阶段工件必须非空(验收表有行、证据链接有目标);AGENTS.md 同步一句;后续可给 inspect_sdlc_state.py 外加非空校验脚本机械化。
 
 ## 数据契约(所有窗口共用;谁改谁同步本文件并提交)

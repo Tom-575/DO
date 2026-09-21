@@ -5,7 +5,8 @@
   "scripts": {
     "prototype": "vite --host 0.0.0.0 --port 4173",
     "build": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

@@ -1,6 +1,6 @@
 # Build: UI V2 全套视觉与四屏闭环重做
 
-status: candidate
+status: accepted
 source_intent: plan.md
 source_design: design.md
 revision: 工作树（未提交）

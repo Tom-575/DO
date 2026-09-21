@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { CaretLeft } from '@phosphor-icons/react';
+import { CaretLeft, PencilSimple } from '@phosphor-icons/react';
 import { PENDING_RECYCLE_MS, useAppState, useDispatch } from '../store/store';
 import { generateAction } from '../lib/ai';
 import { getAction } from '../lib/mock';
 import { useExpandTransition } from '../lib/use-expand-transition';
-import { DEFAULT_MINUTES, DURATION_OPTIONS, durationFigure, durationLabel, durationUnit, parseMinutes } from '../lib/duration';
-import { popIn, riseIn, SPRING_IN } from '../lib/motion';
+import { CUSTOM_MINUTES_MAX, CUSTOM_MINUTES_MIN, DURATION_OPTIONS, clampCustomMinutes, durationLabel, parseMinutes, snapToOption } from '../lib/duration';
+import { EASE_OUT, popIn, riseIn, SPRING_IN } from '../lib/motion';
 import type { DOAction, DOIntent, DOStatus } from '../types';
 import NavBar from '../components/NavBar';
 import './action.css';
@@ -25,7 +25,12 @@ export default function ActionPage() {
   const activeDO = matched && matched.thought === idea ? matched : undefined;
   const [action, setAction] = useState<DOAction | null>(() => activeDO?.action ?? null);
   const [generating, setGenerating] = useState(() => !activeDO);
-  const [minutes, setMinutes] = useState(() => parseMinutes(activeDO?.action.time) ?? DEFAULT_MINUTES);
+  // AI 给的时长只决定初始落在哪一档（吸附到最近档位），从不作为显示值出现（#48）
+  const [minutes, setMinutes] = useState(() => snapToOption(parseMinutes(activeDO?.action.time)));
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customDraft, setCustomDraft] = useState('');
+  /** 用户有没有亲手动过时长。没动过就不写 action.time——别把 AI 的原话「大约 10 分钟」改成吸附后的 15 */
+  const [timeTouched, setTimeTouched] = useState(false);
   // 生成令牌：只让最新一次 generateAction 的响应生效（StrictMode 双挂载时防串）
   const runToken = useRef(0);
 
@@ -36,7 +41,7 @@ export default function ActionPage() {
       .then((next) => {
         if (runToken.current !== token) return;
         setAction(next);
-        setMinutes(parseMinutes(next.time) ?? DEFAULT_MINUTES);
+        setMinutes(snapToOption(parseMinutes(next.time)));
         setGenerating(false);
       })
       .catch(() => {
@@ -44,7 +49,7 @@ export default function ActionPage() {
         if (runToken.current !== token) return;
         const next = getAction(text);
         setAction(next);
-        setMinutes(parseMinutes(next.time) ?? DEFAULT_MINUTES);
+        setMinutes(snapToOption(parseMinutes(next.time)));
         setGenerating(false);
       });
   };
@@ -52,14 +57,17 @@ export default function ActionPage() {
   useEffect(() => {
     if (activeDO) {
       setAction(activeDO.action);
-      setMinutes(parseMinutes(activeDO.action.time) ?? DEFAULT_MINUTES);
+      setMinutes(snapToOption(parseMinutes(activeDO.action.time)));
       setGenerating(false);
       return;
     }
     runGenerate(idea);
   }, [idea]); // settings 在页面生命周期内视为不变，不纳入依赖
 
-  /** 真正离开：清掉临时状态回首页（收回动画播完后由 hook 调用） */
+  /**
+   * 真正离开：清掉临时状态回首页（收回动画播完后由 hook 调用）。
+   * 返回与提交共用这一条出口：提交前已把 DO 落库，返回则什么都没写。
+   */
   const finalizeLeave = () => {
     dispatch({ type: 'setIdea', idea: '' });
     dispatch({ type: 'setActiveDO', id: null });
@@ -68,11 +76,30 @@ export default function ActionPage() {
   const expand = useExpandTransition(finalizeLeave);
   const leave = expand.leave;
 
+  /** 已经不在固定档位上的分钟数 = 当前用的是自定义值 */
+  const isCustom = !(DURATION_OPTIONS as readonly number[]).includes(minutes);
+
+  /**
+   * 自定义输入落定：夹到 1–90。
+   * 空着或不是数字时**只是收起**，不替用户做决定——`clampCustomMinutes` 的「回落默认档」
+   * 是给初始化用的，在这里用它会把一次手滑变成"时长被改成 5 分钟"。
+   */
+  const applyCustom = () => {
+    const value = Number(customDraft);
+    if (!customDraft.trim() || !Number.isFinite(value)) {
+      setCustomOpen(false);
+      return;
+    }
+    setMinutes(clampCustomMinutes(value));
+    setTimeTouched(true);
+    setCustomOpen(false);
+  };
+
   const commit = (choice: { intent: DOIntent; status: DOStatus; parkedAt?: number }) => {
     if (!action) return;
     const { intent, status, parkedAt } = choice;
-    // 时长的选择写在 action.time 上，与行动本身一起落库
-    const finalAction: DOAction = { ...action, time: durationLabel(minutes) };
+    // 只有用户亲手动过时长才改写 action.time（否则保留 AI 给的原话，见 design 行为契约 4）
+    const finalAction: DOAction = { ...action, time: timeTouched ? durationLabel(minutes) : action.time };
     if (activeDO) {
       dispatch({ type: 'updateDO', id: activeDO.id, patch: { intent, status, action: finalAction, ...(parkedAt === undefined ? {} : { parkedAt }) } });
     } else {
@@ -91,7 +118,9 @@ export default function ActionPage() {
     transition={expand.animated || reduceMotion ? { duration: 0 } : SPRING_IN}
   >
     <NavBar
-      left={<button className="icon-action" onClick={() => dispatch({ type: 'setScreen', screen: 'input', direction: 'back' })} aria-label="返回"><CaretLeft size={19} weight="bold" /></button>}
+      /* 返回 = 放弃这一步回首页。此前回对话页,而对话页挂载即重发念头、落定后又推回本页,
+         形成「返回 → 弹回」循环(带 key 时每轮还夹一次真实请求) */
+      left={<button className="icon-action" onClick={leave} aria-label="返回"><CaretLeft size={19} weight="bold" /></button>}
       title=""
       /* V2 稿右槽是「换一个建议」，2026-09-17 用户决定不复刻：保持「行动页不给换」的旧结论 */
       right={<span className="nav-spacer" />}
@@ -109,7 +138,7 @@ export default function ActionPage() {
         {action
           ? <>
               <p className="figure action-figure">
-                {durationFigure(minutes)}<em>{durationUnit(minutes)}</em>
+                {minutes}<em>MIN</em>
               </p>
               <div className="action-rule" />
               <p className="action-body">{action.title}</p>
@@ -124,12 +153,57 @@ export default function ActionPage() {
           className={`duration-option${option === minutes ? ' selected' : ''}`}
           aria-pressed={option === minutes}
           disabled={generating}
-          onClick={() => setMinutes(option)}
+          onClick={() => {
+            setMinutes(option);
+            setTimeTouched(true);
+            setCustomOpen(false);
+          }}
         >
-          <b className="figure">{durationFigure(option)}</b>
-          <small>{durationUnit(option) === 'HR' ? '小时' : '分钟'}</small>
+          <b className="figure">{option}</b>
+          <small>分钟</small>
         </button>)}
+        {/* 自定义是第三档：展开一个输入，而不是再来一颗预设胶囊 */}
+        <button
+          className={`duration-option duration-option-custom${isCustom ? ' selected' : ''}`}
+          aria-pressed={isCustom}
+          disabled={generating}
+          onClick={() => {
+            setCustomDraft(isCustom ? String(minutes) : '');
+            setCustomOpen((open) => !open);
+          }}
+        >
+          {isCustom
+            ? <><b className="figure">{minutes}</b><small>分钟</small></>
+            : <><PencilSimple size={20} /><small>自定义</small></>}
+        </button>
       </motion.div>
+
+      {/* 就地展开：按 §5.3「圆形 disclosure → 容器高度展开 / 收起，不做位移动效」，
+          这里只做高度 + 透明度，不用带位移的 popIn */}
+      {customOpen && <motion.div
+        className="duration-custom"
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: 'auto', opacity: 1 }}
+        transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: EASE_OUT }}
+      >
+        <label className="duration-custom-field">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={CUSTOM_MINUTES_MIN}
+            max={CUSTOM_MINUTES_MAX}
+            value={customDraft}
+            autoFocus
+            placeholder={`${CUSTOM_MINUTES_MIN}–${CUSTOM_MINUTES_MAX}`}
+            aria-label={`自定义时长（${CUSTOM_MINUTES_MIN}–${CUSTOM_MINUTES_MAX} 分钟）`}
+            onChange={(event) => setCustomDraft(event.target.value)}
+            onKeyDown={(event) => { if (event.key === 'Enter') applyCustom(); }}
+          />
+          <span>分钟</span>
+        </label>
+        <button className="duration-custom-confirm" onClick={applyCustom}>确定</button>
+        <button className="duration-custom-cancel" onClick={() => setCustomOpen(false)}>取消</button>
+      </motion.div>}
     </div>
 
     <motion.div className="bottom-actions" {...riseIn(reduceMotion, 0.28, 34)}>

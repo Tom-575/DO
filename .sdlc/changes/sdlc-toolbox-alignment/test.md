@@ -56,6 +56,32 @@ updated_at: 2026-09-19
 | 同文 hash | PowerShell/.NET SHA-256（归一行尾） | 通过 |
 | 工具箱工作区 | `git -C Tools/claude-sdlc status --porcelain` | 通过（守卫已提交） |
 
+## Code review（两轴）：不适用（窄豁免）
+
+**豁免理由**：本 change 的全部改动都在**流程与工具层**，`prototypes/first-loop/` 下**没有任何产品代码改动**。
+核实命令（输出为空即成立）：
+
+```bash
+git log --name-only --pretty=format: 192c8a4..HEAD | Sort-Object -Unique | Where-Object { $_ -like 'prototypes*' }
+```
+
+两轴评审的 Standards 轴针对产品代码的明文契约（`DESIGN §5` 动效规范等）、Spec 轴针对产品行为规格，
+对本 change 都不成立。
+
+**改动清单**（本轮实改，逐项对应上面的验收表）：
+
+- `.codebuddy/skills/`：17 个薄封装（15 个新建 + `navigator` / `code-review` 改指工具箱本体）。
+- `.sdlc/RUNBOOK.md`（新建）、`.sdlc/DAILY.md`（新建）、`.sdlc/templates/daily.md`、`.sdlc/INDEX.md` 手写区。
+- `.sdlc/learnings/README.md`、`.sdlc/decisions/README.md`（新建：空目录在 Git 里不存在）。
+- `.zcode/` 整目录移除（53 文件，−2091 行）。
+- `AGENTS.md` / `CODEBUDDY.md` / `.codebuddy/rules/sdlc-gate/RULE.mdc`：门禁铁律段拆分与三处同文。
+- `Tools/claude-sdlc/`（**被 gitignore，不进主仓库**）：`inspect` 字段名对齐、`validate` 的 `shared/` 候选探测、
+  `add-artifact` 存在性守卫、`refresh-index` 标记内重写、`advance` 的 gate 语义、6 个阶段 SKILL 补 gate 值。
+
+**替代验证**：本 change 靠**实跑工具箱脚本 + 三处 hash 比对 + 守卫自测**（见「Required checks」与验收表），
+这比代码评审更贴近它真正的失效模式（命令不生效、路径探测错、文档三处漂移）。
+**若日后本 change 引入产品代码，本节失效**，必须按 `RUNBOOK.md` §9 补两轴评审。
+
 ## Untested scope
 
 - **裸克隆下的薄封装回落**：`Tools/` 被 gitignore，裸克隆后 `.codebuddy/skills/*` 的指向失效——回落说明与 RUNBOOK §1 是纸面路径，未在缺工具箱的机器上实测。

@@ -18,6 +18,9 @@
 > 上面这段铁律与 `CODEBUDDY.md`、`.codebuddy/rules/sdlc-gate/RULE.mdc` **逐字同文**（用 `gate-rules` 标记比对，命令见 `.sdlc/RUNBOOK.md`）。改一处必须同步三处。
 >
 > 每轮会话结束前在 `.sdlc/DAILY.md` 追加一节（铁律见该文件；「待决策」为空 = 当日无需人工动作）。
+>
+> **Test 阶段的 gate 前置**：`test.md` 必须含两轴 code review（`## Code review`，`Standards` 与 `Spec` 齐）；
+> 纯流程 / 文档 change 可走窄豁免。规则见 `.sdlc/RUNBOOK.md` §9，由 `check_artifacts_nonempty.py` 机械校验。
 
 **按运行时分流（工具入口）**
 

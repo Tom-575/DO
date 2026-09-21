@@ -1,5 +1,5 @@
 version: 1
-updated_at: '2026-09-17'
+updated_at: '2026-09-20'
 active_changes:
 - id: ui-v2-redesign
   title: "UI V2 \u5168\u5957\u89C6\u89C9\u4E0E\u56DB\u5C4F\u95ED\u73AF\u91CD\u505A"
@@ -19,3 +19,82 @@ active_changes:
     \ \u4E0E\u672C\u5730\u4E00\u81F4)"
   gate_approved_by: tom57
   gate_approved_at: '2026-09-17 13:39:31.234416+00:00'
+- id: sdlc-toolbox-alignment
+  title: "SDLC \u5DE5\u5177\u94FE\u5BF9\u9F50:\u5220\u65E7 IDE \u5FEB\u7167/\u8584\
+    \u5C01\u88C5\u8865\u5168/\u95E8\u7981\u6587\u6863\u91CD\u6392/RUNBOOK+DAILY"
+  stage: plan
+  risk: low
+  gate: awaiting-human-review
+  owner: codebuddy-agent
+  stage_owners:
+    plan: tom57
+    design: tom57
+    build: tom57
+    test: tom57
+    deploy: tom57
+    maintain: tom57
+  source: "\u7528\u6237 2026-09-19:\u6E05\u7406 .zcode \u4E0E\u91CD\u590D\u6587\u6863\
+    ,\u8865\u9F50 skill \u53D1\u73B0\u5165\u53E3,\u843D\u5730 DAILY.md \u4E0E\u5DE5\
+    \u5177\u94FE\u4FEE\u590D\u8BB0\u5F55"
+  issue: ''
+  pr: ''
+  supersedes: null
+  plan: .sdlc/changes/sdlc-toolbox-alignment/plan.md
+  design: .sdlc/changes/sdlc-toolbox-alignment/design.md
+  build: .sdlc/changes/sdlc-toolbox-alignment/build.md
+  test: .sdlc/changes/sdlc-toolbox-alignment/test.md
+  deploy: null
+  maintain: null
+- id: v2-device-feedback
+  title: "V2 \u771F\u673A\u53CD\u9988:\u7B2C\u4E00\u6B65\u9875\u8FD4\u56DE\u5361\u6B7B\
+    \ / \u4ECA\u5929-\u75D5\u8FF9\u6A2A\u6ED1\u624B\u52BF\u5931\u6548 / \u5FF5\u5934\
+    \u5361\u53BB\u793A\u4F8B chip"
+  stage: plan
+  risk: medium
+  gate: awaiting-human-review
+  owner: codebuddy-agent
+  stage_owners:
+    plan: tom57
+    design: tom57
+    build: tom57
+    test: tom57
+    deploy: tom57
+    maintain: tom57
+  source: "\u7528\u6237 2026-09-19 \u771F\u673A\u4E0A\u624B\u540E\u7684\u56DB\u6761\
+    \u53CD\u9988(1 \u963B\u65AD + 2 \u4F53\u9A8C + 1 \u5F85\u8BA8\u8BBA\u6539\u7248\
+    )"
+  issue: ''
+  pr: ''
+  supersedes: null
+  plan: .sdlc/changes/v2-device-feedback/plan.md
+  design: .sdlc/changes/v2-device-feedback/design.md
+  build: .sdlc/changes/v2-device-feedback/build.md
+  test: .sdlc/changes/v2-device-feedback/test.md
+  deploy: null
+  maintain: null
+- id: v2-usage-refinement
+  title: "V2 \u4F7F\u7528\u7EC6\u5316:\u5165\u53E3\u6539 DO \u4E14\u65E0 AI \u76F4\
+    \u8DF3 / \u5173\u8054\u5FF5\u5934\u63D0\u5347 / \u65F6\u957F\u6863\u4F4D 5-15-\u81EA\
+    \u5B9A\u4E49"
+  stage: plan
+  risk: medium
+  gate: awaiting-human-review
+  owner: codebuddy-agent
+  stage_owners:
+    plan: tom57
+    design: tom57
+    build: tom57
+    test: tom57
+    deploy: tom57
+    maintain: tom57
+  source: "\u7528\u6237 2026-09-20 \u4F1A\u8BDD:\u4E09\u6761\u4F7F\u7528\u540E\u7684\
+    \u8C03\u6574\u8981\u6C42(\u5BF9\u5E94 docs/TODO.md #46 / #47 / #48)"
+  issue: ''
+  pr: ''
+  supersedes: null
+  plan: .sdlc/changes/v2-usage-refinement/plan.md
+  design: null
+  build: .sdlc/changes/v2-usage-refinement/build.md
+  test: .sdlc/changes/v2-usage-refinement/test.md
+  deploy: null
+  maintain: null

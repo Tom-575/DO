@@ -9,7 +9,7 @@
 ## 0. 判断依据（本机事实）
 
 - 工具箱本体 `Tools/claude-sdlc/`：**独立 git 仓库、无 remote、被 `.gitignore` 忽略**。本机提交：
-  `ebcb611`（56 项：阶段工件改名收尾 + 10 个 primitive skill 入库）／`3a8332a`（inspect、validate 修复）／`0df0aac`（add-artifact 守卫）／`dbd495d`（gate 词表文档化、refresh-index 标记化、advance 语义、daily 模板、工件非空校验）／**`6a7a512`（6 个阶段 SKILL 写明 gate 值、模板去 status 双写、init 生成 README、变量改名）**。
+  `ebcb611`（56 项：阶段工件改名收尾 + 10 个 primitive skill 入库）／`3a8332a`（inspect、validate 修复）／`0df0aac`（add-artifact 守卫）／`dbd495d`（gate 词表文档化、refresh-index 标记化、advance 语义、daily 模板、工件非空校验）／`6a7a512`（6 个阶段 SKILL 写明 gate 值、模板去 status 双写、init 生成 README、变量改名）／**`24b02bd`（另一窗口产出、主 agent 代为入库：`code-review` 提为 Test 必需 + 真机走查提为 Deploy 必需 + 两门禁并入 `validate`）**。
 - `.zcode/`（旧 IDE 快照）**已删除**（主仓库提交 `601ca38`）。
 - 四个校验当前全绿（2026-09-20 复跑）：
   - `inspect_sdlc_state.py .` → 各 change `Missing: none`
@@ -68,11 +68,12 @@
 
 | # | 问题 | 决定 | 依据 |
 |---|---|---|---|
-| 1 | 非空校验是否接入 `validate` | **不接入**，保持按需运行 | 接入会让历史工件一片红，先让活跃 change 干净 |
+| 1 | 非空校验是否接入 `validate` | ~~不接入~~ → **已并入 `validate_sdlc_state.py`**（2026-09-21 被取代） | 另一窗口按 `docs/TODO.md` #51 落地：两个入口曾「一个绿一个红」，并入后 `advance` 前跑一次即可 |
 | 2 | `learnings/`、`decisions/` 空目录 | **带 README 保留** | 空目录在 Git 里不存在，README 让人看懂用途；`decisions/` 未来有用 |
 | 3 | 本机缓存 | **删** | 可再生；已清 |
-| 4 | 同文校验（`gate-rules` 三处 hash）做成 pre-commit 钩子 | **不做**，保持手动命令 | 提交频率低，钩子收益不大 |
-| 5 | （新增，未拍板）`advance` 是否要求当前阶段 gate 已人工确认 | **代码已具备该行为**（`update_sdlc_state.py` 第 172 行），无需再改 | 2026-09-20 冒烟实测：未确认即拒绝推进 |
+| 4 | 同文校验做成 pre-commit 钩子 | ~~不做~~ → **已建 `.githooks/pre-commit`**（2026-09-21 被取代） | 同上 #51。钩子只跑 `validate`，工具箱缺失时**跳过不拦**。**需你手动启用一次**：`git config core.hooksPath .githooks`（Git 配置不进版本控制，agent 不得代改） |
+| 5 | `advance` 是否要求当前阶段 gate 已人工确认 | **代码已具备该行为**（`update_sdlc_state.py` 第 172 行），无需再改 | 2026-09-20 冒烟实测：未确认即拒绝推进 |
+| 6 | `code-review` / 真机走查 是否提为门禁 | **已提为必需**：`test.md` 须含 `## Code review` 且 Standards/Spec 两轴齐全；`deploy.md` 须含 `## 真机走查`（有证据链接，或明说「未做」+ 去向） | 2026-09-21 用户裁决「改成必须」（`docs/TODO.md` #49 / #50）；四期、五期各欠过一次真机走查，代价是真机上手第一天撞到 #42/#43 |
 
 ## E. 验收方式（每项都可复跑）
 
