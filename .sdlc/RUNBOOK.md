@@ -1,12 +1,14 @@
 # SDLC RUNBOOK（本项目怎么用这套工具箱）
 
 > **定位**：**工具用法**只写在这里。`AGENTS.md` / `CODEBUDDY.md` / `.codebuddy/rules/sdlc-gate/RULE.mdc` 只写「必须用它」的铁律并指向本文件——同一段说明不再三处复制。
-> **维护点**：工具箱本体 `Tools/claude-sdlc/`（**被 `.gitignore` 忽略**，自带独立 git 仓库、**无 remote**）。
+> **维护点**：工具箱本体 `Tools/claude-sdlc/`（**被 `.gitignore` 忽略**，自带独立 git 仓库）。**2026-09-21 起已有远端**：`origin → https://github.com/Tom-575/claude-sdlc-skill.git`——此前它只存在于本机，是本项目最大的结构性风险（换机器即失），现已消除。
 > **决策 B（2026-09-19）**：旧运行时留下的 skill 快照 `.zcode/` **已删除**，skill 正文只在工具箱本体里。
 
 ## 1. 装工具箱三步（新机器 / 裸克隆）
 
-1. 把 claude-sdlc 工具箱克隆或拷贝到 `Tools/claude-sdlc/`（该目录被 gitignore，不进版本控制）。
+1. 从远端克隆工具箱到 `Tools/claude-sdlc/`：
+   `git clone https://github.com/Tom-575/claude-sdlc-skill.git Tools/claude-sdlc`
+   （该目录被 gitignore，不进本仓库的版本控制；2026-09-21 之前只能靠拷贝，现已可从远端取。）
 2. 确认 `Tools/claude-sdlc/skills/`（17 个 skill）与 `Tools/claude-sdlc/shared/`（6 个契约文档）都在。
 3. 校验：`python Tools/claude-sdlc/scripts/inspect_sdlc_state.py .` 应输出 `Missing: none`；`python Tools/claude-sdlc/scripts/validate_sdlc_state.py .` 应输出 `SDLC state is valid`。
 
@@ -89,6 +91,8 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 两条都**不等到 `stage == <阶段>` 才查**：提前写好的工件也受同一把尺子管。
 
 ## 6. 本机改动与去向（换机器会丢，故在此留档）
+
+> **读表须知（2026-09-21）**：下表前几条里写的「无 remote / 无法 push 上游」是**当时**的事实。同日该克隆已接上远端 `origin → https://github.com/Tom-575/claude-sdlc-skill.git` 并推送 `d6eab14`，此后工具箱的每次修改都有 off-machine 备份。
 
 | 日期 | 改动 | 去向 |
 |---|---|---|

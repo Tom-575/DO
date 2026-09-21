@@ -19,7 +19,7 @@ updated_at: 2026-09-19
 | 来源类型 | maintenance |
 | 来源引用 | `CLAUDE_SDLC_TODO.md` |
 | 上游记录 | plan.md / design.md |
-| 代码版本 | 主仓库 `9803f28`（本 change 的文档/工具链收口）；工具箱本地提交 `ebcb611` → `3a8332a` → `0df0aac` → `dbd495d` → `6a7a512` → `24b02bd`（该克隆无 remote，不进主仓库） |
+| 代码版本 | 主仓库 `9803f28`（本 change 的文档/工具链收口）；工具箱提交 `ebcb611` → `3a8332a` → `0df0aac` → `dbd495d` → `6a7a512` → `24b02bd` → `671afb1`，2026-09-21 已与远端 `dd09e1a` 合并并推送 `d6eab14`（远端 `Tom-575/claude-sdlc-skill`） |
 | 当前状态 | candidate（2026-09-19 重建：本文件曾被 `add-artifact` 用空模板覆盖） |
 
 ## Implementation summary

@@ -105,7 +105,7 @@ git log --name-only --pretty=format: 192c8a4..HEAD | Sort-Object -Unique | Where
 
 | 风险 | 说明 | 处置 |
 |---|---|---|
-| 工具箱修复只在本机 | 该克隆无 remote，无法 push 上游 | RUNBOOK §6 已留档；换机器按 §1 重装 + §6 重做 |
+| 工具箱修复只在本机（**已于 2026-09-21 解除**） | 该克隆当时无 remote，无法 push 上游 | 2026-09-21 接上 `origin → https://github.com/Tom-575/claude-sdlc-skill.git` 并推送 `d6eab14`；换机器改为从远端克隆（RUNBOOK §1） |
 | 双会话写同一批文件 | `lifecycle.yaml` / `INDEX.md` / `DAILY.md` 被两方先后写入 | 已按内容边界隔离提交；**建议串行化窗口** |
 | 同文靠纪律 | hash 校验是命令，不是提交钩子 | 列入 #41（可选做成 pre-commit） |
 | 工件曾被工具清空 | `add-artifact` 无守卫（现已修） | 三份工件按事实重建；#41 记录该缺陷 |

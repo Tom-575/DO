@@ -8,7 +8,7 @@
 
 ## 0. 判断依据（本机事实）
 
-- 工具箱本体 `Tools/claude-sdlc/`：**独立 git 仓库、无 remote、被 `.gitignore` 忽略**。本机提交：
+- 工具箱本体 `Tools/claude-sdlc/`：**独立 git 仓库**、被 `.gitignore` 忽略；**2026-09-21 起有远端** `origin → https://github.com/Tom-575/claude-sdlc-skill.git`（远端原有一位 Codex 在 2026-09-13 交付的 `dd09e1a`，经核验与本地 `ebcb611` **逐字节一致**；以**合并**保留其历史后推送 `d6eab14`，非强推）。提交：
   `ebcb611`（56 项：阶段工件改名收尾 + 10 个 primitive skill 入库）／`3a8332a`（inspect、validate 修复）／`0df0aac`（add-artifact 守卫）／`dbd495d`（gate 词表文档化、refresh-index 标记化、advance 语义、daily 模板、工件非空校验）／`6a7a512`（6 个阶段 SKILL 写明 gate 值、模板去 status 双写、init 生成 README、变量改名）／`24b02bd`（另一窗口产出、主 agent 代为入库：`code-review` 提为 Test 必需 + 真机走查提为 Deploy 必需 + 两门禁并入 `validate`）／**`671afb1`（`advance` 存在性守卫；`validate` 的 `status:` / `revision:` 正则不再跨行）**。
 - `.zcode/`（旧 IDE 快照）**已删除**（主仓库提交 `601ca38`）。
 - 四个校验当前全绿（2026-09-20 复跑）：
@@ -109,4 +109,7 @@
 
 **④ 钩子已就位**：`.githooks/pre-commit` 复制到 `.git/hooks/pre-commit`（**没有改 `git config`**，按安全规矩我不代改 Git 配置）。已实测生效——第一次提交时钩子打印 `SDLC state is valid` 并放行。长期仍建议你亲自执行 `git config core.hooksPath .githooks`，否则 `.githooks/` 之后的更新不会同步到 `.git/hooks/`。
 
-**⑤ 仍未做**：`snapToOption`（AI 时长吸附）仍是假设；工具箱是否进版本控制（`Tools/` 被 gitignore → **CI 门禁目前不可能**，只能靠本地钩子）。
+**⑤ 工具箱已接远端（本日最大的结构性风险消除）**：`origin → https://github.com/Tom-575/claude-sdlc-skill.git`，推送 `d6eab14`。
+远端原本只有 Codex 于 2026-09-13 交付的 `dd09e1a`；经 `git diff dd09e1a ebcb611` **为空**证明其内容与本地交付逐字节一致，故走**合并**（13 处冲突按「本地线是严格超集」取本地版本，合并结果树与 `671afb1` 完全相同），`dd09e1a..d6eab14` 是**快进推送**——**全程未使用任何强推**。
+
+**⑥ 仍未做**：`snapToOption`（AI 时长吸附）仍是假设；`Tools/` 仍被 gitignore → **CI 门禁仍不可能**（工具箱虽已上远端，但不在本项目的仓库里），只能靠本地钩子。
