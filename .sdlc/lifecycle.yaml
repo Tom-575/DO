@@ -52,9 +52,9 @@ active_changes:
   title: "V2 \u771F\u673A\u53CD\u9988:\u7B2C\u4E00\u6B65\u9875\u8FD4\u56DE\u5361\u6B7B\
     \ / \u4ECA\u5929-\u75D5\u8FF9\u6A2A\u6ED1\u624B\u52BF\u5931\u6548 / \u5FF5\u5934\
     \u5361\u53BB\u793A\u4F8B chip"
-  stage: test
+  stage: deploy
   risk: medium
-  gate: evidence-passed
+  gate: awaiting-human-review
   owner: codebuddy-agent
   stage_owners:
     plan: tom57
@@ -73,7 +73,7 @@ active_changes:
   design: .sdlc/changes/v2-device-feedback/design.md
   build: .sdlc/changes/v2-device-feedback/build.md
   test: .sdlc/changes/v2-device-feedback/test.md
-  deploy: null
+  deploy: .sdlc/changes/v2-device-feedback/deploy.md
   maintain: null
   gate_approved_by: tom57
   gate_approved_at: '2026-09-21 10:05:44.432579+00:00'
@@ -82,9 +82,9 @@ active_changes:
   title: "V2 \u4F7F\u7528\u7EC6\u5316:\u5165\u53E3\u6539 DO \u4E14\u65E0 AI \u76F4\
     \u8DF3 / \u5173\u8054\u5FF5\u5934\u63D0\u5347 / \u65F6\u957F\u6863\u4F4D 5-15-\u81EA\
     \u5B9A\u4E49"
-  stage: test
+  stage: deploy
   risk: medium
-  gate: evidence-passed
+  gate: awaiting-human-review
   owner: codebuddy-agent
   stage_owners:
     plan: tom57
@@ -102,7 +102,7 @@ active_changes:
   design: .sdlc/changes/v2-usage-refinement/design.md
   build: .sdlc/changes/v2-usage-refinement/build.md
   test: .sdlc/changes/v2-usage-refinement/test.md
-  deploy: null
+  deploy: .sdlc/changes/v2-usage-refinement/deploy.md
   maintain: null
   gate_approved_by: tom57
   gate_approved_at: '2026-09-21 10:05:45.175047+00:00'
