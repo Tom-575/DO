@@ -1,6 +1,6 @@
 # Test: V2 真机反馈 —— 第一步页返回卡死 / 今天-痕迹横滑手势失效 / 念头卡去示例 chip
 
-status: passed
+status: accepted
 candidate_revision: 未提交工作树（评审固定点 HEAD = 9803f28）
 source_intent: .sdlc/changes/v2-device-feedback/plan.md
 source_design: .sdlc/changes/v2-device-feedback/design.md

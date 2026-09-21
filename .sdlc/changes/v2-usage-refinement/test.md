@@ -1,6 +1,6 @@
 # Test: V2 使用细化 —— 入口改「DO」且无 AI 直跳 / 关联念头提升 / 时长档位 5-15-自定义
 
-status: passed
+status: accepted
 candidate_revision: 未提交工作树（评审固定点 HEAD = 9803f28）
 source_intent: .sdlc/changes/v2-usage-refinement/plan.md
 source_design: .sdlc/changes/v2-usage-refinement/design.md

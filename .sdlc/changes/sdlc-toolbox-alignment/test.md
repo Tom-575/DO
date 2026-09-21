@@ -56,6 +56,18 @@ updated_at: 2026-09-19
 | 同文 hash | PowerShell/.NET SHA-256（归一行尾） | 通过 |
 | 工具箱工作区 | `git -C Tools/claude-sdlc status --porcelain` | 通过（守卫已提交） |
 
+## 证据索引
+
+上面每条断言的可复核落点（全在仓库内，裸克隆也能打开；**刻意不链 `Tools/`**——它被 gitignore，裸克隆下会变成断链）：
+
+| 断言组 | 落点 |
+|---|---|
+| 工具箱三处修复的清单与复现命令 | [RUNBOOK.md §6](../../RUNBOOK.md) |
+| `inspect` / `validate` / 非空校验的复跑结果（2026-09-20） | [CLAUDE_SDLC_TODO.md §E](../../../CLAUDE_SDLC_TODO.md) |
+| 铁律三处同文的 hash 校验命令 | [RUNBOOK.md §7](../../RUNBOOK.md) |
+| 本轮过程记录（含并行会话与两处错误知识修正） | [DAILY.md](../../DAILY.md) |
+| 门禁铁律正文（三处同文的源） | [AGENTS.md](../../../AGENTS.md) |
+
 ## Code review（两轴）：不适用（窄豁免）
 
 **豁免理由**：本 change 的全部改动都在**流程与工具层**，`prototypes/first-loop/` 下**没有任何产品代码改动**。

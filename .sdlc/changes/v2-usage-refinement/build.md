@@ -1,6 +1,6 @@
 # Build: V2 使用细化 —— 入口改「DO」且无 AI 直跳 / 关联念头提升 / 时长档位 5-15-自定义
 
-status: candidate
+status: accepted
 source_intent: .sdlc/changes/v2-usage-refinement/plan.md
 source_design: .sdlc/changes/v2-usage-refinement/design.md
 issue:

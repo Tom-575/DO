@@ -1,11 +1,11 @@
 # Build: SDLC 工具链对齐
 
-status: candidate
+status: accepted
 source_intent: plan.md
 source_design: design.md
 issue:
 pr:
-revision: 主仓库工作树（提交 `601ca38` 之后）；工具箱本地提交 `3a8332a`、`<add-artifact 守卫>`
+revision: 9803f28
 owner: codebuddy-agent
 created_at: 2026-09-19
 updated_at: 2026-09-19
@@ -19,7 +19,7 @@ updated_at: 2026-09-19
 | 来源类型 | maintenance |
 | 来源引用 | `CLAUDE_SDLC_TODO.md` |
 | 上游记录 | plan.md / design.md |
-| 代码版本 | 主仓库 `601ca38` + 工作树；工具箱本地提交 |
+| 代码版本 | 主仓库 `9803f28`（本 change 的文档/工具链收口）；工具箱本地提交 `ebcb611` → `3a8332a` → `0df0aac` → `dbd495d` → `6a7a512` → `24b02bd`（该克隆无 remote，不进主仓库） |
 | 当前状态 | candidate（2026-09-19 重建：本文件曾被 `add-artifact` 用空模板覆盖） |
 
 ## Implementation summary

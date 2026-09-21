@@ -1,5 +1,5 @@
 version: 1
-updated_at: '2026-09-20'
+updated_at: '2026-09-21'
 active_changes:
 - id: ui-v2-redesign
   title: "UI V2 \u5168\u5957\u89C6\u89C9\u4E0E\u56DB\u5C4F\u95ED\u73AF\u91CD\u505A"
@@ -22,9 +22,9 @@ active_changes:
 - id: sdlc-toolbox-alignment
   title: "SDLC \u5DE5\u5177\u94FE\u5BF9\u9F50:\u5220\u65E7 IDE \u5FEB\u7167/\u8584\
     \u5C01\u88C5\u8865\u5168/\u95E8\u7981\u6587\u6863\u91CD\u6392/RUNBOOK+DAILY"
-  stage: plan
+  stage: test
   risk: low
-  gate: awaiting-human-review
+  gate: evidence-passed
   owner: codebuddy-agent
   stage_owners:
     plan: tom57
@@ -45,13 +45,16 @@ active_changes:
   test: .sdlc/changes/sdlc-toolbox-alignment/test.md
   deploy: null
   maintain: null
+  gate_approved_by: tom57
+  gate_approved_at: '2026-09-21 10:05:43.647035+00:00'
+  gate_note: "\u7528\u6237 2026-09-21 \u6307\u4EE4\u300C\u5168\u90FD\u786E\u8BA4\u300D"
 - id: v2-device-feedback
   title: "V2 \u771F\u673A\u53CD\u9988:\u7B2C\u4E00\u6B65\u9875\u8FD4\u56DE\u5361\u6B7B\
     \ / \u4ECA\u5929-\u75D5\u8FF9\u6A2A\u6ED1\u624B\u52BF\u5931\u6548 / \u5FF5\u5934\
     \u5361\u53BB\u793A\u4F8B chip"
-  stage: plan
+  stage: test
   risk: medium
-  gate: awaiting-human-review
+  gate: evidence-passed
   owner: codebuddy-agent
   stage_owners:
     plan: tom57
@@ -72,13 +75,16 @@ active_changes:
   test: .sdlc/changes/v2-device-feedback/test.md
   deploy: null
   maintain: null
+  gate_approved_by: tom57
+  gate_approved_at: '2026-09-21 10:05:44.432579+00:00'
+  gate_note: "\u7528\u6237 2026-09-21 \u6307\u4EE4\u300C\u5168\u90FD\u786E\u8BA4\u300D"
 - id: v2-usage-refinement
   title: "V2 \u4F7F\u7528\u7EC6\u5316:\u5165\u53E3\u6539 DO \u4E14\u65E0 AI \u76F4\
     \u8DF3 / \u5173\u8054\u5FF5\u5934\u63D0\u5347 / \u65F6\u957F\u6863\u4F4D 5-15-\u81EA\
     \u5B9A\u4E49"
-  stage: plan
+  stage: test
   risk: medium
-  gate: awaiting-human-review
+  gate: evidence-passed
   owner: codebuddy-agent
   stage_owners:
     plan: tom57
@@ -93,8 +99,11 @@ active_changes:
   pr: ''
   supersedes: null
   plan: .sdlc/changes/v2-usage-refinement/plan.md
-  design: null
+  design: .sdlc/changes/v2-usage-refinement/design.md
   build: .sdlc/changes/v2-usage-refinement/build.md
   test: .sdlc/changes/v2-usage-refinement/test.md
   deploy: null
   maintain: null
+  gate_approved_by: tom57
+  gate_approved_at: '2026-09-21 10:05:45.175047+00:00'
+  gate_note: "\u7528\u6237 2026-09-21 \u6307\u4EE4\u300C\u5168\u90FD\u786E\u8BA4\u300D"
