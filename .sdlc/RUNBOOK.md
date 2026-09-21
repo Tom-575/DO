@@ -104,6 +104,8 @@ python Tools/claude-sdlc/scripts/update_sdlc_state.py archive <change-id>
 | 2026-09-20 | `init_sdlc.py` 为 `learnings/`、`decisions/` 生成 README（空目录在 Git 里不存在，新人看不出用途） | 同上 |
 | 2026-09-20 | `update_sdlc_state.py` 内指向 `plan.md` 的局部变量 `intent` → `plan_artifact`（改名残留） | 同上 |
 | 2026-09-20 | 本机缓存清理：`.pytest_cache/`、`scripts/__pycache__/`、`tests/__pycache__/` | 可再生，无需提交 |
+| 2026-09-21 | `advance` 补**存在性守卫**：字段为空但工件文件已存在时**只登记、不覆盖**（与 `add-artifact` 是同一个洞的另一扇门；实测 `v2-usage-refinement/design.md` 的 8KB 真内容只差一步被清成模板） | 已提交工具箱 `671afb1` |
+| 2026-09-21 | `validate` 的 `^status:` / `^revision:` 正则 `\s*` → `[ \t]*`：`\s` 会吃掉换行，值为空的字段于是捕获**下一行**首词（实测把 `owner:` 当成 revision）。**该 bug 按阶段生效——stage 推到 build/test 才现形**，此前一直绿 | 同上 |
 | 2026-09-19 | `.sdlc/changes/record-card-export-h5/design.md` 一处假 Markdown 链接（文件名模板被当成链接目标） | 随本项目提交 |
 | 2026-09-21 | 两道专属门禁（code review / 真机走查）**并入 `validate_sdlc_state.py`**（`import check_artifacts_nonempty`）：此前是两个入口，容易「一个绿一个红」；现在 `validate` 一处跑完，`advance` 前跑它即可 | 同上 |
 | 2026-09-21 | 新增 `.githooks/pre-commit`（进版本控制）+ `.gitattributes` 钉住 `.githooks/* eol=lf`。**启用需人工执行一次** `git config core.hooksPath .githooks`（Git 配置不进版本控制，agent 不得代改）。工具箱缺失时**跳过不拦**——`Tools/` 被 gitignore，换机器拦下来只会让人没法提交 | 随本项目提交；用法见 §10 末 |

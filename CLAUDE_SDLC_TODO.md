@@ -9,7 +9,7 @@
 ## 0. 判断依据（本机事实）
 
 - 工具箱本体 `Tools/claude-sdlc/`：**独立 git 仓库、无 remote、被 `.gitignore` 忽略**。本机提交：
-  `ebcb611`（56 项：阶段工件改名收尾 + 10 个 primitive skill 入库）／`3a8332a`（inspect、validate 修复）／`0df0aac`（add-artifact 守卫）／`dbd495d`（gate 词表文档化、refresh-index 标记化、advance 语义、daily 模板、工件非空校验）／`6a7a512`（6 个阶段 SKILL 写明 gate 值、模板去 status 双写、init 生成 README、变量改名）／**`24b02bd`（另一窗口产出、主 agent 代为入库：`code-review` 提为 Test 必需 + 真机走查提为 Deploy 必需 + 两门禁并入 `validate`）**。
+  `ebcb611`（56 项：阶段工件改名收尾 + 10 个 primitive skill 入库）／`3a8332a`（inspect、validate 修复）／`0df0aac`（add-artifact 守卫）／`dbd495d`（gate 词表文档化、refresh-index 标记化、advance 语义、daily 模板、工件非空校验）／`6a7a512`（6 个阶段 SKILL 写明 gate 值、模板去 status 双写、init 生成 README、变量改名）／`24b02bd`（另一窗口产出、主 agent 代为入库：`code-review` 提为 Test 必需 + 真机走查提为 Deploy 必需 + 两门禁并入 `validate`）／**`671afb1`（`advance` 存在性守卫；`validate` 的 `status:` / `revision:` 正则不再跨行）**。
 - `.zcode/`（旧 IDE 快照）**已删除**（主仓库提交 `601ca38`）。
 - 四个校验当前全绿（2026-09-20 复跑）：
   - `inspect_sdlc_state.py .` → 各 change `Missing: none`
@@ -88,7 +88,25 @@
 | B2 | `.codebuddy/skills/` = 17，且每个目标路径存在 | ✅ |
 | B3–B5 | 三处 `gate-rules` 块归一 EOL 后 hash 相同（命令见 RUNBOOK §7） | ✅ |
 
-## F. 仅剩的两件事（都要人点头）
+## F. 2026-09-21 本轮：用户「全都确认」之后
 
-1. **gate 是否推进**：`sdlc-toolbox-alignment` 现在 `stage: plan` / `gate: awaiting-human-review`。工具已保证「没人工确认推不动」——按新规则，这里需要你一句确认（或否决）才能 `set-gate` + `advance`。
-2. **6 个本地提交是否 push**：`a778123` `3828e8e` `601ca38` `8a28098` `14d746b` `b1704ec`（+ 本文件的提交）。建议等并行会话收工后一次推，避免推入半成品。
+**① 三个 change 的四级 gate 已放行**（`plan → design → build → test`，`--approver tom57`，note 记「用户 2026-09-21 指令『全都确认』」）：
+
+| change | 放行后状态 |
+|---|---|
+| `sdlc-toolbox-alignment` | `stage: test` / `gate: evidence-passed` |
+| `v2-device-feedback` | `stage: test` / `gate: evidence-passed` |
+| `v2-usage-refinement` | `stage: test` / `gate: evidence-passed` |
+
+**刻意没推到 deploy**：三者都没有 deploy 工件，而 `advance` 会用空模板造出空壳；且三者 `test.md` 都写着「放行后的必做项 = 真机确认」，正对应 deploy 的稳定 gate 不该批。
+
+**② 放行这件事本身抓出两个新缺陷**（都是"真用一下"才现形的，不是读代码能看出来的）：
+
+1. **`advance` 缺存在性守卫**（`671afb1`）：`lifecycle.yaml` 里 `design: null` 但 `design.md` 有 8KB 真内容时，推进会把真内容清成模板。放行前先做了逐字节备份，故无损失；守卫已补并回归验证（`REAL CONTENT 真内容` 幸存 + 被登记）。
+2. **`validate` 的 `status:` / `revision:` 正则跨行**（`671afb1`）：`\s*` 吃掉换行 → 空值字段捕获下一行首词，实测把 `owner:` 当成 revision 报 `unknown revision owner:`。**它按阶段生效**：stage 一推到 build/test 就假报，此前一直绿。
+
+**③ 顺带补齐 `sdlc-toolbox-alignment` 两处不达标**：`build.md` 的 `revision:` 原写中文说明（校验要求真实提交号）→ `9803f28`；`test.md` 无可复核链接 → 新增「证据索引」（**刻意不链 `Tools/`**：被 gitignore，裸克隆会变断链）。
+
+**④ 钩子已就位**：`.githooks/pre-commit` 复制到 `.git/hooks/pre-commit`（**没有改 `git config`**，按安全规矩我不代改 Git 配置）。已实测生效——第一次提交时钩子打印 `SDLC state is valid` 并放行。长期仍建议你亲自执行 `git config core.hooksPath .githooks`，否则 `.githooks/` 之后的更新不会同步到 `.git/hooks/`。
+
+**⑤ 仍未做**：`snapToOption`（AI 时长吸附）仍是假设；工具箱是否进版本控制（`Tools/` 被 gitignore → **CI 门禁目前不可能**，只能靠本地钩子）。
