@@ -1,16 +1,23 @@
 #!/bin/sh
 # DO 项目提交前门禁（`.sdlc/RUNBOOK.md` §9/§10 的落地）。
 #
-# 启用一次（每个克隆各做一次——Git 配置不进版本控制，所以只能由人执行）：
-#   git config core.hooksPath .githooks
+# 安装（每个克隆各做一次，二选一）——见 `.sdlc/RUNBOOK.md` §10 末：
+#   ① 复制（不需要改 Git 配置，agent 也能代做）：
+#        cp .githooks/pre-commit .git/hooks/pre-commit
+#   ② 让 Git 直接读这个目录（需人工执行一次，Git 配置不进版本控制）：
+#        git config core.hooksPath .githooks
 #
 # 校验内容 `validate_sdlc_state.py`：工件存在 / 阶段 status 合法 / revision 能在 git 找到 /
 # 相对链接有目标 / INDEX 的 change 计数一致，外加两道专属门禁——
 #   ① Test：`test.md` 必须有两轴 code review（§9）
 #   ② Deploy：`deploy.md` 必须交代真机走查（有证据，或明说没做 + 欠账去向）（§10）
 #
-# 工具箱缺失时**跳过并提示**、不拦提交：`Tools/` 被 gitignore，换机器时它本来就不在，
-# 拦下来只会让人没法提交（见 §1 的「装工具箱三步」）。
+# **两种「跳过」是刻意的**，它们都是环境问题而不是门禁问题，拦下来只会让人没法提交：
+#   ① 工具箱缺失（`Tools/` 被 gitignore，换机器时本来就不在，见 §1）；
+#   ② 找不到 python（精简环境 / 没装）。
+# 注意：本文件必须是 LF。CRLF 会让 `#!/bin/sh` 变成 `#!/bin/sh\r`，
+# Git for Windows 执行时报 bad interpreter —— 门禁就此静默失效（2026-09-22 实测踩到，
+# `.gitattributes` 只在 checkout 时生效，改完源文件要重新安装一次）。
 set -e
 root="$(git rev-parse --show-toplevel)"
 validator="$root/Tools/claude-sdlc/scripts/validate_sdlc_state.py"
@@ -21,8 +28,18 @@ if [ ! -f "$validator" ]; then
   exit 0
 fi
 
+# python / python3 / py（Windows 的启动器）任选其一
+PY=""
+for candidate in python python3 py; do
+  if command -v "$candidate" >/dev/null 2>&1; then PY="$candidate"; break; fi
+done
+if [ -z "$PY" ]; then
+  echo "[pre-commit] 找不到 python，跳过 SDLC 门禁（装好 python 后自动生效）。" >&2
+  exit 0
+fi
+
 cd "$root"
-if ! python "$validator" .; then
+if ! "$PY" "$validator" .; then
   echo "[pre-commit] SDLC 门禁未通过，提交已拦下。" >&2
   echo "[pre-commit] 修完再提交；确需绕过用 git commit --no-verify，并在 .sdlc/DAILY.md 写清理由。" >&2
   exit 1

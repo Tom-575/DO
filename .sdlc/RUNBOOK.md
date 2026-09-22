@@ -195,13 +195,28 @@ Spec 来源按 `code-review` 技能：本项目的 change `plan.md` / `design.md
 
 ### 提交钩子：把门禁从「记得跑」变成「跑不了就交不上去」
 
+**安装（每个克隆做一次，二选一）**：
+
 ```bash
-git config core.hooksPath .githooks      # 每个克隆执行一次；Git 配置不进版本控制
+# ① 复制（推荐：不需要改 Git 配置，agent 也能代做）
+cp .githooks/pre-commit .git/hooks/pre-commit
+
+# ② 让 Git 直接读这个目录（需人工执行一次——Git 配置不进版本控制，agent 不得代改）
+git config core.hooksPath .githooks
 ```
 
-- 钩子 `.githooks/pre-commit` **进版本控制**；`.gitattributes` 钉了 `.githooks/* eol=lf`
-  —— CRLF 会让 `#!/bin/sh` 变成 `#!/bin/sh\r`，钩子直接死掉；
-- 它跑的就是 `validate_sdlc_state.py`（含上面两道门禁）；
-- **工具箱缺失时跳过并提示、不拦提交**：`Tools/` 被 gitignore，换机器时它本来就不在，
-  拦下来只会让人没法提交；装好后（§1）自动生效；
+- 钩子 `.githooks/pre-commit` **进版本控制**；它跑的就是 `validate_sdlc_state.py`（含上面两道门禁）。
+- **安装前必须确认它是 LF**：CRLF 会让 `#!/bin/sh` 变成 `#!/bin/sh\r`，Git for Windows 报
+  bad interpreter，**门禁静默失效**（不是报错失败，是根本不会被唤起）。`.gitattributes` 的
+  `eol=lf` **只在 checkout 时生效**——在 Windows 上手工改过这个文件之后，要转回 LF 并**重新安装一次**。
+  检查一行足矣：
+
+  ```bash
+  python -c "b=open('.githooks/pre-commit','rb').read(); print('CRLF =', b.count(b'\r\n'))"
+  ```
+
+- **两种「跳过」是刻意的**，它们都是环境问题、不是门禁问题，拦下来只会让人没法提交：
+  ① 工具箱缺失（`Tools/` 被 gitignore，换机器本来就不在，见 §1）；② 找不到 `python`
+  （依次探测 `python` / `python3` / `py`）。
 - 绕过用 `git commit --no-verify`，但**绕过就要在 DAILY 里写理由**（与铁律 4 同源）。
+- **它拦的是所有人**：并行窗口的提交同样会跑这道门禁，若被拦下请先跑 `validate` 看缺什么。

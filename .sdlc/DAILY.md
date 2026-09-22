@@ -7,6 +7,36 @@
 >
 > 新增一节请复制文末的「模板」。
 
+## 2026-09-22 · 钩子启用
+
+**做了**
+
+- **提交钩子装上并跑通**（用户「启用」）。走的是**复制**路线
+  （`cp .githooks/pre-commit .git/hooks/pre-commit`）而不是 `core.hooksPath`——后者要改 Git 配置，
+  agent 不得代改；复制不改配置、效果相同，且 agent 可以代做。两条安装方式都写进了 RUNBOOK §10。
+- **修掉启用时暴露的两个问题**：
+  ① `.githooks/pre-commit`（源）与 `.git/hooks/pre-commit`（安装副本）**两份都是 CRLF**，而
+  `.gitattributes` 的 `eol=lf` **只在 checkout 时生效**——CRLF 会让 `#!/bin/sh` 变成 `#!/bin/sh\r`，
+  Git for Windows 报 bad interpreter，**门禁静默失效**（不是拦错，是根本不被唤起）。
+  已转 LF 并重新安装，一行自检命令写进 RUNBOOK §10。
+  ② 脚本原来直接用 `python`：换机器 / 精简环境里找不到 python 时会把提交**拦死，而且理由是错的**
+  （「门禁未通过」，其实是环境问题）。改成依次探测 `python` / `python3` / `py`，全都没有就
+  **跳过并说明**——与「工具箱缺失跳过」同一逻辑。
+- 验证：用 git 自带的 `sh.exe` 实跑钩子 → `SDLC state is valid` / exit 0；受限 PATH 下
+  `command -v python` 返回非零（证明跳过分支会走到）；LF 自检两份都是 `CRLF = 0`。
+
+**待决策**
+
+- 无新增。
+
+**遗留**
+
+- 钩子拦的是**所有人**：并行窗口的提交同样会跑这道门禁 → 去向：RUNBOOK §10 末已写明。
+- 真机走查仍未做（两个 change 转「稳定」的阻塞项）→ 去向：`changes/*/deploy.md` 的「真机走查」节
+  + 本文件 2026-09-21 节的待决策。
+
+---
+
 ## 2026-09-21 · review 门禁
 
 **做了**
