@@ -113,6 +113,28 @@ DOM 交互一律用真实 `element.click()`（走 React 事件委托）；页面
 
 **剔除的误报**：0 条（子代理在两轴上对本 change 的判断经复核均成立）。
 
+## #43 的证据边界（2026-09-22 更正）
+
+**本文档此前把「根因 = 拖拽期间的程序化滚动打断触摸滚动」写成了结论——那是假设，不是已证实的结论。**
+事后专门做了一轮探针（`scripts/probe-swipe.mjs`）想复现，结果是**复现不了，而且原因不在页面**：
+
+| 方式 | 结果 |
+|---|---|
+| 程序化 `scrollLeft = 430` | **430**（容器可滚：`scrollWidth 860 = 2 × 430`，snap 正常） |
+| `mouseWheel` `deltaX = 400` | 0（滚轮推不动） |
+| `synthesizeScrollGesture`（mouse 源） | 0 |
+| `synthesizeScrollGesture`（touch 源） | 0 |
+| `setEmitTouchEventsForMouse` + 逐帧 `dispatchMouseEvent` | 0，且该 CDP 命令**超时不返回** |
+
+**结论**：headless Chrome 驱动不了这个容器的横向滚动（容器本身没问题，是它的输入管线缺这一环）。
+因此：
+
+- 本文档里「手势越过中点不调用 `scrollTo`」这类断言**成立**——它们验证的是**代码路径**（tab 变化来源区分），
+  这部分有证据；
+- 但 **#43 的根因假设（程序化滚动打断触摸）从未被复现**，修复是否真的解决「滑不动」**仍未被证实**；
+- 要判定它，只有两条路：**手机浏览器手动验**，或**真机远程调试**（Android USB + CDP，那才是真触摸）。
+- 已加固：`scripts/verify.mjs` 的每个 CDP 调用带 15s 超时，不会再出现「脚本静默挂死」。
+
 ## Untested scope
 
 - **真触摸串**（`pointerdown → move → up` 的真实手指拖拽与惯性）：本机无可用自动化浏览器

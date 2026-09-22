@@ -142,10 +142,21 @@ function connect(wsUrl, onEvent) {
         }
       }
     };
+    // 每个 CDP 命令都带超时：某些输入事件（尤其触摸/拖拽）在 headless 下可能永远不返回，
+    // 没有超时的话整个脚本会**静默挂死**——2026-09-22 实测踩到（加了一整段触摸实验，
+    // 结果 `Input.dispatchMouseEvent` 不返回，看起来像"卡住"）。
+    const CDP_TIMEOUT_MS = 15_000;
     const send = (method, params = {}) =>
       new Promise((res, rej) => {
         const id = ++seq;
-        pending.set(id, { resolve: res, reject: rej });
+        const timer = setTimeout(() => {
+          pending.delete(id);
+          rej(new Error(`CDP timeout: ${method} (>${CDP_TIMEOUT_MS}ms)`));
+        }, CDP_TIMEOUT_MS);
+        pending.set(id, {
+          resolve: (value) => { clearTimeout(timer); res(value); },
+          reject: (err) => { clearTimeout(timer); rej(err); },
+        });
         ws.send(JSON.stringify({ id, method, params }));
       });
     const once = (method) =>

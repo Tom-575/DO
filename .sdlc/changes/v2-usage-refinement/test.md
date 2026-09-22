@@ -140,6 +140,13 @@ Spec 轴报的 6 条真问题逐条到代码核对后成立，**无剔除**（�
 
 ## Untested scope
 
+- **真实触摸手势**（跨 change 的公共缺口）：headless Chrome 下试过四种注入方式，
+  **全部驱动不了 `.tab-pager` 的横向滚动**（`scrollLeft` 全程 0）——`mouseWheel`、
+  `synthesizeScrollGesture`（mouse / touch 两种源）、`setEmitTouchEventsForMouse` + 逐帧鼠标拖拽
+  （最后一种还会让 CDP 调用超时不返回）。而**同一次探针里程序化 `scrollLeft = 430` 是生效的**
+  （容器可滚、snap 正常），所以这是 headless 输入管线的缺口，不是页面问题。
+  → 结论：「手指滑动」「跟手」「吸附落页」这一类**只能在手机浏览器或真机远程调试上判**。
+  探针保留在 `scripts/probe-swipe.mjs`（换环境后可复跑，判断是否仍受同一限制）。
 - **真实 AI 请求**：C13 只验证了「入口分流」（写假 `baseURL` 后对话页出现），**没有**验证真实
   model 返回的措辞与时长（本轮所有断言都在无 AI 的 mock 路径上）。
 - **真机触摸与移动键盘**：`inputMode="numeric"` 是否弹数字键盘、自定义输入框在 iOS 上的 `autoFocus`
