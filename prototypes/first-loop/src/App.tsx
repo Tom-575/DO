@@ -10,6 +10,7 @@ import RecordPage from './pages/RecordPage';
 import StartPage from './pages/StartPage';
 import TabBar from './components/TabBar';
 import AppearancePanel from './components/AppearancePanel';
+import SwipeDebug from './components/SwipeDebug';
 import { useSwipeLag } from './lib/use-swipe-lag';
 
 /** 「我的」里的内置背景值;渐变取色与 components/appearance.css 的 .background-swatch 保持一致（CSS 读不到这里的常量，改一处要同步另一处） */
@@ -20,6 +21,9 @@ const BUILTIN_BACKGROUNDS: Record<'mist' | 'night', string> = {
 
 /** 底部两个分页 Tab 的顺序,与 .tab-pager 里的 slide 顺序一致 */
 const TABS: Tab[] = ['today', 'traces'];
+
+/** `?debug=swipe` 时挂上横滑诊断面板（headless 验不了触摸，只能把事件流画在屏幕上） */
+const SWIPE_DEBUG = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'swipe';
 
 /** 点 Tab 的程序化滚动期间忽略落点判定的时长:这段滚动会掠过对侧页,跟着判定会把用户按回去 */
 const PROGRAMMATIC_GUARD_MS = 600;
@@ -155,5 +159,6 @@ export default function App() {
         </div>}
       </>}
     </div>
+    {SWIPE_DEBUG && <SwipeDebug />}
   </div>;
 }
