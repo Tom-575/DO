@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useAppState, useDispatch } from './store/store';
 import type { Tab } from './store/types';
@@ -22,11 +22,16 @@ const BUILTIN_BACKGROUNDS: Record<'mist' | 'night', string> = {
 /** 底部两个分页 Tab 的顺序,与 .tab-pager 里的 slide 顺序一致 */
 const TABS: Tab[] = ['today', 'traces'];
 
-/** `?debug=swipe` 时挂上横滑诊断面板（headless 验不了触摸，只能把事件流画在屏幕上） */
+/** `?debug=swipe` 时挂上横滑诊断面板（把事件流画在屏幕上，见 components/SwipeDebug.tsx） */
 const SWIPE_DEBUG = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === 'swipe';
 
-/** 点 Tab 的程序化滚动期间忽略落点判定的时长:这段滚动会掠过对侧页,跟着判定会把用户按回去 */
-const PROGRAMMATIC_GUARD_MS = 600;
+/** 锁定为横向手势所需的最小位移:小于它之前先不动,把纵向手势留给页内的滚动容器 */
+const AXIS_LOCK_PX = 8;
+/** 翻页阈值:与页宽取较大者,免得短屏上过于灵敏 */
+const SWIPE_MIN_PX = 40;
+const SWIPE_RATIO = 0.22;
+/** 首尾页继续往外拖时的阻尼 */
+const EDGE_RESISTANCE = 0.32;
 
 export default function App() {
   const { screen, tab, settings } = useAppState();
@@ -34,91 +39,86 @@ export default function App() {
   const { theme, background } = settings;
   const reduceMotion = useReducedMotion();
   const pagerRef = useRef<HTMLDivElement>(null);
-  /** 记录「已按当前分页定位过的节点」:换节点时直接落位,不做平滑滚动 */
-  const positionedNode = useRef<HTMLDivElement | null>(null);
-  /** 单页宽度缓存:滚动回调里不再读 clientWidth,避免每帧触发布局 */
-  const pageWidthRef = useRef(0);
-  /** 程序化滚动守卫的截止时间戳;在此之前不做落点判定 */
-  const guardedUntil = useRef(0);
-  /** 这次 tab 变化是否由手势(拖拽 / 惯性)驱动:是则只让状态跟上,绝不介入滚动位置 */
-  const tabFromGesture = useRef(false);
-  /** 上一次滚动位置:用来算每次事件的位移量(喂养标题的惯性甩出) */
-  const lastScrollLeft = useRef(0);
   /** 大标题的横向惯性甩出:静止永远在原位,只有动的时候才甩 */
   const { lag: titleLag, report: reportSwipe, reset: resetSwipe } = useSwipeLag(reduceMotion);
-  /** 最新 tab 的镜像,供滚动回调读取(回调可能晚于一次渲染) */
-  const tabRef = useRef(tab);
-  tabRef.current = tab;
   const tabIndex = Math.max(0, TABS.indexOf(tab));
+
+  /**
+   * 横滑 = **pointer 事件自己跟手**，不用原生 `overflow-x` 滚动（#43）。
+   *
+   * 为什么换掉原生方案：这个分页器内部每页还要各自纵向滚动，于是成了「外层横向滚动容器 +
+   * 内层纵向滚动容器」的嵌套。这种结构在移动端的手势竞争极不可靠——线上真机反复报
+   * 「手指左右滑完全不动」，而本机又无法用 CDP 合成滚动来复现（连临时插入的最简
+   * `overflow-x:auto` 容器也推不动，所以证明不了任何事）。
+   *
+   * 换成 pointer 之后：真机上走的是标准 DOM 事件，不受嵌套滚动规则摆布；桌面上也能用
+   * 鼠标拖拽真实验证（CDP 派发得了 pointer，派发不了滚动）。
+   * 代价：失去原生惯性，翻页动画由 CSS transition 承担（参数见 §5.2）。
+   */
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef(0);
+  const gesture = useRef({ active: false, axis: null as null | 'x' | 'y', startX: 0, startY: 0, lastX: 0 });
+
+  const setDrag = (next: number) => {
+    dragRef.current = next;
+    setDragX(next);
+  };
+
+  const onPagerPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // 指针捕获:手指移出容器也不会丢事件
+    event.currentTarget.setPointerCapture(event.pointerId);
+    gesture.current = { active: true, axis: null, startX: event.clientX, startY: event.clientY, lastX: event.clientX };
+    setDragging(true);
+  };
+
+  const onPagerPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const g = gesture.current;
+    if (!g.active) return;
+    const dx = event.clientX - g.startX;
+    const dy = event.clientY - g.startY;
+    if (!g.axis) {
+      // 还没定向:位移太小先不动,别把一次轻点变成抖动
+      if (Math.abs(dx) < AXIS_LOCK_PX && Math.abs(dy) < AXIS_LOCK_PX) return;
+      g.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      if (g.axis === 'y') return; // 纵向手势交给页内的滚动容器,本层不接管
+    }
+    if (g.axis !== 'x') return;
+    // 首尾页继续往外拖时给阻尼,避免「拖了却什么都没有」的空感
+    const atEdge = (tabIndex === 0 && dx > 0) || (tabIndex === TABS.length - 1 && dx < 0);
+    setDrag(atEdge ? dx * EDGE_RESISTANCE : dx);
+    // 大标题的惯性甩出:喂的是「这次新增的位移」,方向与从前的 scrollLeft 增量保持一致
+    reportSwipe(g.lastX - event.clientX);
+    g.lastX = event.clientX;
+  };
+
+  const finishGesture = () => {
+    const g = gesture.current;
+    if (!g.active) return;
+    g.active = false;
+    setDragging(false);
+    const moved = dragRef.current;
+    setDrag(0);
+    if (g.axis !== 'x') return;
+    const width = pagerRef.current?.clientWidth ?? 0;
+    const threshold = Math.max(SWIPE_MIN_PX, width * SWIPE_RATIO);
+    if (moved < -threshold && tabIndex < TABS.length - 1) dispatch({ type: 'setTab', tab: TABS[tabIndex + 1] });
+    else if (moved > threshold && tabIndex > 0) dispatch({ type: 'setTab', tab: TABS[tabIndex - 1] });
+  };
+
+  // 视口尺寸变化(桌面缩放窗口 / 手机横竖屏)后清掉惯性甩出的偏移
+  useEffect(() => {
+    const onResize = () => resetSwipe();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [resetSwipe]);
+
   // 内置渐变直接用;图片地址则叠一层 --backdrop 蒙层,保证任意照片上的文字对比度
   const builtinBackground = background === 'mist' || background === 'night' ? BUILTIN_BACKGROUNDS[background] : null;
   const backgroundStyle: CSSProperties =
     background === 'none'
       ? {}
       : { backgroundImage: builtinBackground ?? `linear-gradient(var(--backdrop),var(--backdrop)),url(${background})` };
-
-  // tab 状态 → 分页位置:点 Tab、保存记录后跳痕迹页都走这里;首次挂载直接落位,不闪一下。
-  // 手势驱动的 tab 变化只对账、不动滚动位置——拖拽期间调用程序化滚动会打断触摸滚动,
-  // 真机上就是「滑一下就弹回」(#43)。
-  useEffect(() => {
-    const fromGesture = tabFromGesture.current;
-    tabFromGesture.current = false; // 先消费,任何早退分支都不会把标记留到下一次
-    const pager = pagerRef.current;
-    if (!pager) return;
-    const firstForThisNode = positionedNode.current !== pager;
-    positionedNode.current = pager;
-    pageWidthRef.current = pager.clientWidth;
-    if (fromGesture) {
-      // 位置正由手指推进:状态跟上就够了,位置交给滚动本身
-      lastScrollLeft.current = pager.scrollLeft;
-      return;
-    }
-    const left = tabIndex * pager.clientWidth;
-    if (Math.abs(pager.scrollLeft - left) < 2) return;
-    // 位移基准要先对齐到起点,否则程序化滚动发出的第一个事件会被算成一次巨大位移
-    lastScrollLeft.current = pager.scrollLeft;
-    guardedUntil.current = Date.now() + PROGRAMMATIC_GUARD_MS;
-    pager.scrollTo({ left, behavior: firstForThisNode || reduceMotion ? 'auto' : 'smooth' });
-  }, [tabIndex, reduceMotion]);
-
-  // 视口尺寸变化(桌面缩放窗口 / 手机横竖屏)后重新对齐当前页,避免停在半页
-  useEffect(() => {
-    const onResize = () => {
-      const pager = pagerRef.current;
-      if (!pager) return;
-      pageWidthRef.current = pager.clientWidth;
-      guardedUntil.current = Date.now() + PROGRAMMATIC_GUARD_MS;
-      pager.scrollLeft = tabIndex * pager.clientWidth;
-      lastScrollLeft.current = pager.scrollLeft;
-      resetSwipe();
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [tabIndex, resetSwipe]);
-
-  /**
-   * 滑动 → tab 状态:越过中点立刻翻,让指示胶囊在手指松开前就跟着走(等停稳再翻手感是断的)。
-   * 程序化滚动期间走守卫窗口,用户一按下接管手势守卫即失效。
-   */
-  const syncTabFromScroll = () => {
-    const pager = pagerRef.current;
-    const width = pageWidthRef.current;
-    if (!pager || width === 0) return;
-    const x = pager.scrollLeft;
-    const delta = x - lastScrollLeft.current;
-    lastScrollLeft.current = x;
-    // 标题的惯性甩出要先喂:点 Tab 的程序化滚动也该有同样的物理,不受下面守卫影响
-    if (delta !== 0) reportSwipe(delta);
-
-    if (Date.now() < guardedUntil.current) return;
-    const landed = Math.round(x / width);
-    const nextTab = TABS[Math.max(0, Math.min(TABS.length - 1, landed))];
-    if (nextTab !== tabRef.current) {
-      // 打上「这次是手势引起的」:状态跟手,位置继续交给手指
-      tabFromGesture.current = true;
-      dispatch({ type: 'setTab', tab: nextTab });
-    }
-  };
 
   return <div className={`prototype-frame theme-${theme}`}>
     <div className={`phone-app ${background !== 'none' ? 'has-background' : ''}`} style={backgroundStyle}>
@@ -133,13 +133,15 @@ export default function App() {
           animate={{ opacity: 1 }}
           transition={{ duration: reduceMotion ? 0 : 0.18 }}
         >
-          {/* 一页一张的横滑分页器:两页各自保留纵向滚动位置,未激活的一页 inert */}
+          {/* 分页器:两页各自保留纵向滚动位置,未激活的一页 inert;位移由 pointer 手势驱动 */}
           <div
-            className="tab-pager"
+            className={`tab-pager${dragging ? ' dragging' : ''}`}
             ref={pagerRef}
-            onScroll={syncTabFromScroll}
-            /* 手一碰就作废程序化守卫:接下来是用户在滑,判定要立刻生效 */
-            onPointerDown={() => { guardedUntil.current = 0; }}
+            style={{ transform: `translateX(calc(${-tabIndex * 100}% + ${dragX}px))` }}
+            onPointerDown={onPagerPointerDown}
+            onPointerMove={onPagerPointerMove}
+            onPointerUp={finishGesture}
+            onPointerCancel={finishGesture}
           >
             <div className="tab-slide" inert={tab !== 'today'}>
               <div className="app-scroll"><TodayPage titleLag={titleLag} /></div>

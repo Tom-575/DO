@@ -215,6 +215,18 @@ async function main() {
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 430, height: 932, deviceScaleFactor: 2, mobile: true });
 
+    // 0. 诊断面板必须真的挂上（`?debug=swipe`）——它存在的唯一目的就是定位横滑，
+    //    要是"部署了但没生效"，那比没有更糟（会让人以为页面没问题）。这条同时能验线上。
+    const debugLoaded = once('Page.loadEventFired');
+    await send('Page.navigate', { url: `${APP}?debug=swipe` });
+    await debugLoaded;
+    await sleep(800);
+    const debugProbe = await evaluate(`(() => ({
+      panel: Boolean(document.querySelector('.swipe-debug')),
+      snapshot: document.querySelector('.swipe-debug-snapshot')?.textContent ?? '',
+    }))()`);
+    check('?debug=swipe 挂出诊断面板', debugProbe.panel === true, debugProbe.snapshot.slice(0, 80));
+
     const loaded = once('Page.loadEventFired');
     await send('Page.navigate', { url: APP });
     await loaded;
@@ -254,14 +266,15 @@ async function main() {
       hasGo: Boolean(document.querySelector('.idea-go')),
       hasDoCard: Boolean(document.querySelector('.do-card')),
       slides: document.querySelectorAll('.tab-slide').length,
-      snap: getComputedStyle(document.querySelector('.tab-pager')).scrollSnapType,
+      overflowX: getComputedStyle(document.querySelector('.tab-pager')).overflowX,
+      touchAction: getComputedStyle(document.querySelector('.tab-pager')).touchAction,
     }))()`);
     check('#44 首页不存在 .idea-chips', home.hasChips === false, JSON.stringify(home));
     check('输入框与「DO」入口仍在', home.hasInput && home.hasGo && home.hasDoCard);
-    check('分页器两页 + scroll-snap', home.slides === 2 && home.snap === 'x mandatory', `snap=${home.snap}`);
+    check('分页器两页 + 位移交给 transform（不再用原生横向滚动）', home.slides === 2 && home.overflowX === 'hidden' && home.touchAction === 'pan-y', `overflowX=${home.overflowX} touch-action=${home.touchAction}`);
     await shot('01-today-no-chips.png');
 
-    console.log('\n— #43 分页：手势不介入位置，点 Tab 才介入 —');
+    console.log('\n— #43 分页：pointer 手势跟手 + 翻页 —');
     await evaluate(`(() => {
       window.__scrollToCalls = 0;
       const orig = Element.prototype.scrollTo;
@@ -272,33 +285,63 @@ async function main() {
       return true;
     })()`);
 
-    await evaluate(`(() => { const p = document.querySelector('.tab-pager'); p.scrollLeft = p.clientWidth * 0.6; return true; })()`);
-    await sleep(500);
-    const gesture = await evaluate(`(() => {
-      const p = document.querySelector('.tab-pager');
-      return {
-        scrollToCalls: window.__scrollToCalls,
-        scrollLeft: Math.round(p.scrollLeft),
-        width: p.clientWidth,
-        inert: [...document.querySelectorAll('.tab-slide')].map((s) => s.inert),
-        selected: [...document.querySelectorAll('.tab-bar button')].findIndex((b) => b.classList.contains('selected')),
-      };
-    })()`);
-    check('手势越过中点不调用 scrollTo（修改前必然失败）', gesture.scrollToCalls === 0, JSON.stringify(gesture));
-    check('状态跟手：翻到痕迹', gesture.inert[0] === true && gesture.inert[1] === false);
-    check('吸附落到整数页', Math.abs(gesture.scrollLeft - gesture.width) < 2, `${gesture.scrollLeft}/${gesture.width}`);
-    check('指示胶囊落在痕迹槽', gesture.selected === 2, `selected=${gesture.selected}`);
+    // 横滑已改成 pointer 手势驱动（不再用原生 overflow-x 滚动）。好处之一是**这条终于能被真正验证**：
+    // CDP 派发得了 pointer / mouse，派发不了滚动（探针证明过，连最简对照容器都推不动）。
+    const pagerBox = await evaluate(`(() => { const p = document.querySelector('.tab-pager'); const r = p.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; })()`);
+    const dragY = Math.round(pagerBox.y + pagerBox.h * 0.5);
+    const dragFrom = Math.round(pagerBox.x + pagerBox.w - 60);
+    const dragTo = Math.round(pagerBox.x + 60);
+    const transformOf = () => evaluate(`getComputedStyle(document.querySelector('.tab-pager')).transform`);
+
+    await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: dragFrom, y: dragY, button: 'left', clickCount: 1 });
+    const during = [];
+    for (let step = 1; step <= 8; step += 1) {
+      const x = Math.round(dragFrom + ((dragTo - dragFrom) * step) / 8);
+      await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y: dragY, button: 'left' });
+      await sleep(25);
+      during.push(await transformOf());
+    }
+    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: dragTo, y: dragY, button: 'left', clickCount: 1 });
+    await sleep(700);
+    const swiped = await evaluate(`(() => ({
+      transform: getComputedStyle(document.querySelector('.tab-pager')).transform,
+      inert: [...document.querySelectorAll('.tab-slide')].map((s) => s.inert),
+      selected: [...document.querySelectorAll('.tab-bar button')].findIndex((b) => b.classList.contains('selected')),
+    }))()`);
+    check('#43 拖动中容器跟着手指位移', new Set(during).size >= 4, `${during.length} 次采样 → ${new Set(during).size} 种 transform`);
+    check('#43 越过阈值松手后翻到痕迹页', swiped.inert[0] === true && swiped.inert[1] === false, `inert=${JSON.stringify(swiped.inert)}`);
+    check('#43 指示胶囊跟到痕迹槽', swiped.selected === 2, `selected=${swiped.selected}`);
     await shot('02-swipe-traces.png');
 
-    const beforeClick = await evaluate('window.__scrollToCalls');
+    // 位移不够 → 回弹，不翻页
+    await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: dragFrom, y: dragY, button: 'left', clickCount: 1 });
+    await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: dragFrom - 26, y: dragY, button: 'left' });
+    await sleep(60);
+    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: dragFrom - 26, y: dragY, button: 'left', clickCount: 1 });
+    await sleep(650);
+    const bounced = await evaluate(`[...document.querySelectorAll('.tab-slide')].map((s) => s.inert)`);
+    check('#43 位移不足则回弹（仍停在痕迹页）', bounced[0] === true, `inert=${JSON.stringify(bounced)}`);
+
+    // 轴向锁定：竖向拖拽不该被横向接管
+    const vx = Math.round(pagerBox.x + pagerBox.w / 2);
+    await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: vx, y: Math.round(pagerBox.y + 140), button: 'left', clickCount: 1 });
+    for (let step = 1; step <= 6; step += 1) {
+      await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: vx + 5, y: Math.round(pagerBox.y + 140 - step * 14), button: 'left' });
+      await sleep(20);
+    }
+    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: vx + 5, y: Math.round(pagerBox.y + 56), button: 'left', clickCount: 1 });
+    await sleep(650);
+    const vertical = await evaluate(`[...document.querySelectorAll('.tab-slide')].map((s) => s.inert)`);
+    check('#43 竖向拖拽不会误翻页（轴向锁定生效）', vertical[0] === true, `inert=${JSON.stringify(vertical)}`);
+
+    console.log('\n— #43c 点 Tab 直接归位 —');
     await evaluate(`(() => { document.querySelectorAll('.tab-bar button')[0].click(); return true; })()`);
     await sleep(900);
-    const clickTab = await evaluate(`(() => {
-      const p = document.querySelector('.tab-pager');
-      return { calls: window.__scrollToCalls, scrollLeft: Math.round(p.scrollLeft), inert: [...document.querySelectorAll('.tab-slide')].map((s) => s.inert) };
-    })()`);
-    check('点 Tab 仍走程序化滚动', clickTab.calls > beforeClick, `${beforeClick} → ${clickTab.calls}`);
-    check('点 Tab 后回到今天页', clickTab.inert[0] === false && clickTab.scrollLeft === 0, JSON.stringify(clickTab));
+    const clickTab = await evaluate(`(() => ({
+      inert: [...document.querySelectorAll('.tab-slide')].map((s) => s.inert),
+      scrollToCalls: window.__scrollToCalls,
+    }))()`);
+    check('#43c 点「今天」回到第一页', clickTab.inert[0] === false && clickTab.inert[1] === true, JSON.stringify(clickTab));
 
     console.log('\n— #42 第一步页返回 —');
     await evaluate(`(() => { document.querySelector('.do-card').click(); return true; })()`);

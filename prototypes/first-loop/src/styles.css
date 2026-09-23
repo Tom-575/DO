@@ -161,22 +161,25 @@ p {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+/* 位移由 transform 驱动（pointer 手势，见 App.tsx 的 #43 注释）：
+   原生 `overflow-x` 滚动在这个「外层横向 + 内层纵向」的嵌套结构下，移动端手势竞争不可靠。 */
 .tab-pager {
   flex: 1;
   min-height: 0;
   display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
+  overflow: hidden;
+  touch-action: pan-y; /* 纵向留给页内滚动容器；横向由 JS 接管 */
+  transition: transform 0.34s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+/* 拖动中必须跟手：关掉过渡，位置完全由手指决定 */
+.tab-pager.dragging {
+  transition: none;
 }
 .tab-slide {
   flex: 0 0 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
 }
 
 /* ---------- 排版 ---------- */

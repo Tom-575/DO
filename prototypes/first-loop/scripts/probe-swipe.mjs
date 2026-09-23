@@ -17,8 +17,12 @@ const CHROME = [
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
 ].find((p) => existsSync(p));
 
+// 用**有窗口的普通 Chrome**，不用 --headless：
+// headless 的输入管线是残缺的（滚轮/触摸都推不动容器），只有完整浏览器才能代表真机行为。
+const HEADLESS = process.env.PROBE_HEADLESS === '1';
 const chrome = spawn(CHROME, [
-  '--headless=new', `--remote-debugging-port=${PORT}`, '--remote-allow-origins=*',
+  ...(HEADLESS ? ['--headless=new'] : ['--window-size=460,960']),
+  `--remote-debugging-port=${PORT}`, '--remote-allow-origins=*',
   `--user-data-dir=${join(tmpdir(), `do-probe2-${Date.now()}`)}`,
   '--no-first-run', '--no-default-browser-check', 'about:blank',
 ], { stdio: 'ignore' });
@@ -129,6 +133,67 @@ console.log(`C synthesize(mouse, -430) 采样 → ${JSON.stringify(await trace()
 await reset(); await sleep(400);
 (async () => { try { await send('Input.synthesizeScrollGesture', { x: cx, y: cy, xDistance: -430, yDistance: 0, gestureSourceType: 'touch', speed: 2000 }); } catch (e) { console.log(`D 出错 ${e.message}`); } })();
 console.log(`D synthesize(touch, -430) 采样 → ${JSON.stringify(await trace())}`);
+
+// I. 页面本身能不能纵向滚？（能滚 = 手指的横向手势会被"页面滚动"这个更大的滚动目标抢走）
+const pageScroll = await evaluate(`(() => {
+  const se = document.scrollingElement;
+  const frame = document.querySelector('.prototype-frame');
+  const phone = document.querySelector('.phone-app');
+  return {
+    innerHeight: window.innerHeight,
+    docScrollHeight: se.scrollHeight,
+    docClientHeight: se.clientHeight,
+    canScrollPage: se.scrollHeight > se.clientHeight,
+    frameHeight: frame ? Math.round(frame.getBoundingClientRect().height) : null,
+    phoneHeight: phone ? Math.round(phone.getBoundingClientRect().height) : null,
+    bodyOverflow: getComputedStyle(document.body).overflow,
+    htmlOverflow: getComputedStyle(document.documentElement).overflow,
+  };
+})()`);
+console.log(`I 页面级滚动能力 → ${JSON.stringify(pageScroll)}`);
+
+// F. 决定性对照：动态插入一个**最简**横向容器（同样的 overflow-x:auto），对它发同样的滚轮。
+//    它滚 = 问题在 `.tab-pager` 自身（CSS / 结构）；它也不滚 = 问题在环境 / 事件分发。
+await evaluate(`(() => {
+  const d = document.createElement('div');
+  d.id = 'probe-plain';
+  d.style.cssText = 'position:fixed;left:0;top:0;width:200px;height:80px;overflow-x:auto;overflow-y:hidden;background:#000;z-index:99999';
+  d.innerHTML = '<div style="width:800px;height:60px;background:#fff"></div>';
+  document.body.appendChild(d);
+  window.__plainLog = { wheel: 0, scroll: 0 };
+  d.addEventListener('wheel', () => { window.__plainLog.wheel += 1; }, { passive: true });
+  d.addEventListener('scroll', () => { window.__plainLog.scroll += 1; }, { passive: true });
+  return true;
+})()`);
+await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 100, y: 40, deltaX: 200, deltaY: 0 });
+await sleep(500);
+const plain = await evaluate(`({ ...window.__plainLog, scrollLeft: Math.round(document.getElementById('probe-plain').scrollLeft) })`);
+console.log(`F 对照容器（最简 overflow-x:auto）wheel → ${JSON.stringify(plain)}`);
+
+// G. 事件到底有没有到 `.tab-pager`？挂计数再发一次。
+await evaluate(`(() => {
+  window.__pagerLog = { wheel: 0, scroll: 0 };
+  const p = document.querySelector('.tab-pager');
+  p.addEventListener('wheel', () => { window.__pagerLog.wheel += 1; }, { passive: true });
+  p.addEventListener('scroll', () => { window.__pagerLog.scroll += 1; }, { passive: true });
+  return true;
+})()`);
+await evaluate(`(() => { document.querySelector('.tab-pager').scrollLeft = 0; return true; })()`);
+await sleep(400);
+await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: cx, y: cy, deltaX: 400, deltaY: 0 });
+await sleep(500);
+const pagerLog = await evaluate(`({ ...window.__pagerLog, scrollLeft: Math.round(document.querySelector('.tab-pager').scrollLeft) })`);
+console.log(`G 对 .tab-pager 发 wheel → ${JSON.stringify(pagerLog)}   （wheel=0 表示事件没到它身上）`);
+
+// H. 同样坐标，看 hit-test 命中的是谁
+const hit = await evaluate(`(() => {
+  const el = document.elementFromPoint(${cx}, ${cy});
+  const chain = [];
+  let n = el;
+  while (n && chain.length < 5) { chain.push(n.tagName.toLowerCase() + (n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\\s+/)[0] : '')); n = n.parentElement; }
+  return chain.join(' ← ');
+})()`);
+console.log(`H (${cx},${cy}) 命中链 → ${hit}`);
 
 // E. 触摸模拟 + 逐帧鼠标拖拽：**刻意不跑**。
 // 2026-09-22 实测：`Input.dispatchMouseEvent` 在 headless 下会**超时不返回**
